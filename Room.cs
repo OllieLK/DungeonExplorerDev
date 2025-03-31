@@ -18,15 +18,16 @@ namespace Program
     /// </summary>
     public class Map
     {
-        
+        public char[,] a;
         int sizeX = 10, sizeY = 20;
-        Room[,] Arr; public Room getRoomFromArr(int x, int y) { return Arr[x, y]; }
+        public Room[,] Arr; public Room getRoomFromArr(int x, int y) { return Arr[x, y]; }
 
         // Initializes each room in the map array with a default character and description
         // Also sets some items in one of the rooms, and gives the 4 bordering rooms a description so that the player can move to them
         // and see the description
         public Map(int startingposX, int startingposY)
         {
+            a = new char[sizeX, sizeY];
             Arr = new Room[sizeX, sizeY];
             for (int i = 0; i < sizeX; i++)
             {
@@ -50,24 +51,19 @@ namespace Program
         }
 
         // Shows The map after each "Turn"
-        public void Show()
+        public void UpdateArray()
         {
-            Console.ForegroundColor = ConsoleColor.Blue;
-            Console.WriteLine("Current Map:    ");            
-            Console.ForegroundColor = ConsoleColor.DarkGreen;
             // Loop through all the rooms on the map and display their key character (set to ? if not seen yet)
             // Currently all but the starting rooms are ? as placeholders.
             for (int i = 0; i < sizeX; i++) 
             {
                 for (int j = 0; j < sizeY; j++)
                 {
-                    Console.Write(Arr[i, j].getC()); // Display the character of the room
+                    a[i, j] = Arr[i, j].getC();
+                    //Console.Write(Arr[i, j].getC()); // Display the character of the room
                 }
-                Console.WriteLine(); // Move to the next line after each row of the map
             }
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("[U]: Your Current Location");
-            Console.WriteLine("[?]: Not Visited Area");
+            
         }
 
         // Updates the map after a player moves between rooms

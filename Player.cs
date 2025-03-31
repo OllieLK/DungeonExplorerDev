@@ -24,7 +24,7 @@ namespace Program
     ///     
     /// Class Inventory Item
     /// </summary>
-    class ActionMenuAction
+    public class ActionMenuAction
     {
         public Action A;
         public string N;
@@ -41,7 +41,7 @@ namespace Program
     {
         public Map GameMap;
         public Room CurrentRoom; // Current room player is in
-        List<ActionMenuAction> ActionMenuFunctions = new List<ActionMenuAction>();
+        public List<ActionMenuAction> ActionMenuFunctions = new List<ActionMenuAction>();
         int posX; public void setPosX(int i) { posX = i; } public int getPosX() { return posX; } // The current position of the player within the map
         int posY; public void setPosY(int i) { posY = i; } public int getPosY() { return posY; }
         int Health;
@@ -67,7 +67,6 @@ namespace Program
             CurrentRoom = GameMap.getRoomFromArr(posX, posY); // Initializing current room
 
             // Adding the Functions within here to the List of action menu functions
-            ActionMenuFunctions.Add(new ActionMenuAction(MoveMenu, "Move Menu"));
             ActionMenuFunctions.Add(new ActionMenuAction(pInv.ShowInventory, "Show Inventory"));
             ActionMenuFunctions.Add(new ActionMenuAction(ShowRoomDescription, "Show Room Description"));
             ActionMenuFunctions.Add(new ActionMenuAction(ScoutForItems, "Scout Around For Items"));
@@ -75,26 +74,40 @@ namespace Program
 
 
         // Basic function to show the players health, made to look nice using colours and unicode characters.
-        public void ShowHealth()
+        public (string, string) UpdateHealthString()
         {
-            Console.ForegroundColor = ConsoleColor.Blue;
-            Console.WriteLine("Health Bar:    ");
-            Console.ForegroundColor = ConsoleColor.White;
+            string red = string.Empty;
+            string grey = string.Empty;
             for (int i = 0; i < MaxHealth; i = i + 10)
             {
                 if ((Health - i) > 4)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.Write("♥"); // Using red and white unicode hearts to represent health bar
+                    red += "♥";
+
+
                 }
                 else
                 {
-                    Console.ForegroundColor = ConsoleColor.White;
-                    Console.Write("♥");
+                    grey += "♥";
                 }
             }
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine(" " + Health + "/" + MaxHealth);
+            return (red, grey);
+        }
+
+        public void OverWorldTurnMenu()
+        {
+            char keyPressed = GameInputs.K(new List<Char> { 'w', 'a', 's', 'd', 'e', 'q' });
+            switch (keyPressed)
+            {
+                case 'q':
+
+                    break;
+                case 'e':
+                    break;
+                default:
+                    MoveMenu(keyPressed);
+                    break;
+            }
         }
 
         // Function to show the user the current FloorItems that are present in the room theyre in. allows them to inspect, pickup or leave them
@@ -143,19 +156,15 @@ namespace Program
         }
        
         // Menu for moving the player between rooms, using the WASD keys for convinience.
-        private void MoveMenu()
+        private void MoveMenu(char direction)
         {
-            Console.WriteLine("Press W, A, S or D to move to the adjacnt room in that direction");
-            List<char> Valids = new List<char> { 'w', 'a', 's', 'd' };
-
-            // Get a valid key input for movement (W, A, S, D)
-            char input = GameInputs.K(Valids);
+            
 
             int newX = posX;
             int newY = posY;
 
             // Handle movement based on the key pressed
-            switch (input)
+            switch (direction)
             {
                 case 'a':
                     newY--;
@@ -185,7 +194,7 @@ namespace Program
 
                 // Clear the screen and show the updated map
                 Console.Clear();
-                GameMap.Show();
+                DrawScreen.draw(this.GameMap, this);
             }
         }
 
@@ -201,6 +210,8 @@ namespace Program
             }
             ActionMenuFunctions[(GameInputs.V(ActionMenuFunctions.Count()) - 1)].A(); // Calling the function the user desires.       
         }
+
+        
     }
 
 
@@ -225,12 +236,24 @@ namespace Program
             Debug.Assert(Inventory.Count <= iCapacity);
         }
         private List<InventoryItem> Inventory = new List<InventoryItem>(); // The list of inventory items the player currently has
+        public int GetInventoryCount() { return Inventory.Count;}
 
         public bool IsItemPresent(InventoryItem item)
         {
             return (Inventory.Contains(item));
         }
 
+
+        public string InvString()
+        {
+            string s = String.Empty;
+            for (int i = 0; i < Inventory.Count; i++) // Loops through list displaying the item, number they have and the max number they can hold
+            {
+                s += "{" + (i + 1).ToString() + "} " + Inventory[i].sName + ": " + Inventory[i].noOfItem.ToString() + "of" + Inventory[i].maxNoOfItem.ToString();
+                s += "\n";
+            }
+            return s;
+        }
 
         // Adds one inventory item to the list, checking not full first
         public void PickUpItem(InventoryItem ItemToAdd) 
@@ -242,6 +265,7 @@ namespace Program
             Inventory.Add(ItemToAdd);
             return;
         }
+
         public void ShowInventory() // Shows the player the current items in there inventory
         {
             if (Inventory.Count == 0) // Returns by defualt if inventory is empty
@@ -250,10 +274,15 @@ namespace Program
                 Console.ReadLine();
                 return;
             }
+
+            string s = String.Empty;
             for (int i = 0; i < Inventory.Count; i++) // Loops through list displaying the item, number they have and the max number they can hold
             {
-                Console.WriteLine("[" + (i + 1).ToString() + "] " + Inventory[i].sName + ": " + Inventory[i].noOfItem.ToString() + "/" + Inventory[i].maxNoOfItem.ToString());
+                s += "{" + (i + 1).ToString() + "} " + Inventory[i].sName + ": " + Inventory[i].noOfItem.ToString() + "of" + Inventory[i].maxNoOfItem.ToString();
+                s += "\n";
             }
+            return;
+
             Console.WriteLine("Type the number to inspect, or 0 to skip"); // User input to see if user wants to inspect items or just leave
             int MChoice = (GameInputs.V(Inventory.Count, 0) - 1); // Minus one so matches list idexing
             if (MChoice == -1)

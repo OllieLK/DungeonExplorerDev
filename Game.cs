@@ -8,8 +8,9 @@ namespace Program
     // Main game class, main game loop present in here and entry point.
     public class Game
     {
+        
         // Player instance
-        Player P1;
+        public Player P1;
         // Entry point, sets encoding to support unicode and initializes the player and the map, then starts the titlescreen.
         public Game()
         {
@@ -40,19 +41,20 @@ namespace Program
            Console.ReadLine();
         }
         
+        public void Update()
+        {
+            P1.GameMap.UpdateArray();
+        }
 
         void gameLoop()
         {
-            do
-            {
+            do { 
+            
+                
                 Console.Clear(); // Clears console at start of new turn
-                P1.GameMap.Show(); // Shows Map
-                P1.ShowHealth(); // Shows players health
-                P1.ActionMenu(); // Runs the action menu of the player
-
-                // Debug.Assert functions for player and hes inventory.
-                P1.PlayerDebug();
-                P1.pInv.DebugInv();
+                DrawScreen.draw(P1.GameMap, P1);
+                P1.OverWorldTurnMenu();
+                
             } while (true);
         }
     }
