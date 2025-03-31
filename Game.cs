@@ -52,7 +52,7 @@ namespace Program
             
                 
                 Console.Clear(); // Clears console at start of new turn
-                DrawScreen.draw(P1.GameMap, P1);
+                DrawScreen.drawOverWorld(P1.GameMap, P1);
                 P1.OverWorldTurnMenu();
                 
             } while (true);

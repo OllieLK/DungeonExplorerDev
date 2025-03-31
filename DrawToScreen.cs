@@ -1,6 +1,7 @@
 ﻿using Spectre.Console;
 using Spectre.Console.Rendering;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection.Emit;
@@ -34,12 +35,10 @@ namespace Program
                 if (i < (array.GetLength(0) - 1))
                     result += "\n";
             }
-
+            result += "\n";
             // Return the final result string
             return result;
-        }
-
-        
+        }      
         public static string ActionMenuToString(Player p)
         {
             var a = p.ActionMenuFunctions;
@@ -51,37 +50,40 @@ namespace Program
             }
             return s;
         }
-        public static void draw(Map m, Player p)
-        {
-            var tab = new Table();
-            var textbox = new Panel("\n\n");
-            textbox.Expand = true;
 
-            p.GameMap.UpdateArray();
-            string mapstr = p.GameMap.getRoomFromArr(p.getPosX(), p.getPosY()).GetDescription() + "\n";
-            mapstr += Convert2DArrayToString(m.a);
-            
-            // Create a new table
-            tab.Title = new TableTitle("THE LEGEND OF ZELDA");
-            tab.AddColumn("MAP");
-            tab.AddColumn("ACTIONS (Q)");
-            tab.AddColumn("INVENTORY (E)").Centered();
-            tab.AddColumn("CONTROLS");
-            tab.ShowRowSeparators = false;
-            tab.AddRow(mapstr, ActionMenuToString(p), p.pInv.InvString(), "WASD - Move\n").Centered();
-            tab.Width = Console.WindowWidth;
+        
+
+        public static void drawOverWorld(Map m, Player p)
+        {
             string red, grey;
             (red, grey) = p.UpdateHealthString();
-            tab.AddRow("[red]" + red + "[/]" + "[grey]" + grey + "[/]"); // Add
-            
+            var tab = new Table();
+            p.GameMap.UpdateArray();
 
+            string mapstr = "";
+            mapstr += Convert2DArrayToString(m.a);
+            mapstr += ":pushpin: ";
+            mapstr += p.GameMap.getRoomFromArr(p.getPosX(), p.getPosY()).GetDescription();
+
+            tab.Title = new TableTitle("THE LEGEND OF ZELDA");
+            tab.AddColumn("World Map");
+            tab.AddColumn("Controls");
             
+            
+            tab.AddRow("[red]" + red + "[/]" + "[grey]" + grey + "[/]", "WASD - Move around"); // Add
+            tab.AddRow(mapstr, "E - Open Inventory");
             // Render the table to the console
             AnsiConsole.Render(tab);
-            AnsiConsole.Render(textbox);
-            
+                        
         }
-        
+        public static void DrawInventory(Player p)
+        {
+            Console.Clear();
+            var invPanel = new Panel(p.pInv.InvString());
+            invPanel.Header = new PanelHeader("Inventory");
+            AnsiConsole.Render(invPanel);
+            Console.ReadLine();
+        }
 	}
 
 
@@ -91,9 +93,8 @@ namespace Program
 		{
 			return true;
 		}
-		public Save()
-		{
-
-		}
+        public static bool loadGame() { 
+            throw new NotImplementedException();
+        }
 	}
 }

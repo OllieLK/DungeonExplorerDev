@@ -96,6 +96,8 @@ namespace Program
 
         public void OverWorldTurnMenu()
         {
+            GameMap.UpdateArray();
+
             char keyPressed = GameInputs.K(new List<Char> { 'w', 'a', 's', 'd', 'e', 'q' });
             switch (keyPressed)
             {
@@ -103,6 +105,7 @@ namespace Program
 
                     break;
                 case 'e':
+                    DrawScreen.DrawInventory(this);
                     break;
                 default:
                     MoveMenu(keyPressed);
@@ -194,7 +197,7 @@ namespace Program
 
                 // Clear the screen and show the updated map
                 Console.Clear();
-                DrawScreen.draw(this.GameMap, this);
+                DrawScreen.drawOverWorld(this.GameMap, this);
             }
         }
 
@@ -243,13 +246,30 @@ namespace Program
             return (Inventory.Contains(item));
         }
 
-
+        public string GetQueriedList(string Query)
+        {
+            List<InventoryItem> Queried = new List<InventoryItem>();
+            switch (Query)
+            {
+                case "weapons":
+                    Queried = Inventory.Where(InventoryItem => InventoryItem.sName == "Sword").ToList();
+                    break;
+            }
+            return InvString(Queried);
+        }
         public string InvString()
         {
+            return InvString(new List<InventoryItem>());
+        }
+        public string InvString(List<InventoryItem> l)
+        {
+            if (l.Count == 0)
+                l = Inventory;
+
             string s = String.Empty;
-            for (int i = 0; i < Inventory.Count; i++) // Loops through list displaying the item, number they have and the max number they can hold
+            for (int i = 0; i < l.Count; i++) // Loops through list displaying the item, number they have and the max number they can hold
             {
-                s += "{" + (i + 1).ToString() + "} " + Inventory[i].sName + ": " + Inventory[i].noOfItem.ToString() + "of" + Inventory[i].maxNoOfItem.ToString();
+                s += "{" + (i + 1).ToString() + "} " + l[i].sName + ": " + l[i].noOfItem.ToString() + "of" + l[i].maxNoOfItem.ToString();
                 s += "\n";
             }
             return s;
