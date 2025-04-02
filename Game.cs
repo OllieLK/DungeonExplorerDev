@@ -8,18 +8,19 @@ namespace Program
     // Main game class, main game loop present in here and entry point.
     public class Game
     {
-        
+        public void WrapPlayer(Player player)
+        {
+            P1 = player;
+        }
         // Player instance
         public Player P1;
         // Entry point, sets encoding to support unicode and initializes the player and the map, then starts the titlescreen.
         public Game()
         {
             Console.OutputEncoding = System.Text.Encoding.Unicode;
-            int x, y;
-            x = 5; y = 8;
+            
             P1 = new Player();
             P1.GameMap.UpdateMap(P1.getPosX(), P1.getPosY(), P1.getPosX(), P1.getPosY());
-            titleScreen();
         }
 
         // Simple game title screen. will have saving at some point
@@ -52,7 +53,6 @@ namespace Program
             
                 
                 Console.Clear(); // Clears console at start of new turn
-                DrawScreen.drawOverWorld(P1.GameMap, P1);
                 P1.OverWorldTurnMenu();
                 
             } while (true);

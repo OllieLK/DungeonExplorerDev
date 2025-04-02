@@ -38,7 +38,7 @@ namespace Program
             }
             Arr[startingposX, startingposY].setFilledIn('⌂');
             Arr[startingposX, startingposY].setDescription("Your house");
-            Arr[startingposX, startingposY].FloorItems.Add(new InventoryItem("Sword", 1));
+            Arr[startingposX, startingposY].FloorItems.Add(new InventoryItem("Weapon", "Sword", 1));
 
             // Setting up some sample room descriptions
             Arr[(startingposX + 1), startingposY].setDescription("Duelside-Depths");

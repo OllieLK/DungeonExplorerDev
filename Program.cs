@@ -22,7 +22,8 @@ namespace Program
             }
             
             GameInstance = new Game();
-            
+            GameInstance.titleScreen();
+
             
         }
     }

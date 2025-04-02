@@ -2,6 +2,8 @@
 using System;
 using System.Linq;
 using System.Diagnostics;
+using Spectre.Console;
+
 
 namespace Program
 {
@@ -35,16 +37,17 @@ namespace Program
             N = iN;
         }
     }
-
     
     public class Player
     {
         public Map GameMap;
         public Room CurrentRoom; // Current room player is in
         public List<ActionMenuAction> ActionMenuFunctions = new List<ActionMenuAction>();
-        int posX; public void setPosX(int i) { posX = i; } public int getPosX() { return posX; } // The current position of the player within the map
-        int posY; public void setPosY(int i) { posY = i; } public int getPosY() { return posY; }
-        int Health;
+        int posX; public void setPosX(int i) { posX = i; }
+        public int getPosX() { return posX; } // The current position of the player within the map
+        int posY; public void setPosY(int i) { posY = i; }
+        public int getPosY() { return posY; }
+        public int Health;
         int MaxHealth { get; set; }
         public PlayerInventory pInv; // Instance of PlayerInventory class, representing the players inventory
 
@@ -55,19 +58,20 @@ namespace Program
             Debug.Assert(ActionMenuFunctions.Count() > 0);
         }
 
-        public Player() {
+        public Player()
+        {
             // Assigning starting values
-
-            Health = 100;
+            Health = 70;
             MaxHealth = 100;
             pInv = new PlayerInventory(5); // Initializing inventory
             posX = 5;
             posY = 8;
             GameMap = new Map(posX, posY);
             CurrentRoom = GameMap.getRoomFromArr(posX, posY); // Initializing current room
+            pInv.PickUpItem(new InventoryItem("weapon", "Sword", 1, 1));
+
 
             // Adding the Functions within here to the List of action menu functions
-            ActionMenuFunctions.Add(new ActionMenuAction(pInv.ShowInventory, "Show Inventory"));
             ActionMenuFunctions.Add(new ActionMenuAction(ShowRoomDescription, "Show Room Description"));
             ActionMenuFunctions.Add(new ActionMenuAction(ScoutForItems, "Scout Around For Items"));
         }
@@ -80,23 +84,17 @@ namespace Program
             string grey = string.Empty;
             for (int i = 0; i < MaxHealth; i = i + 10)
             {
-                if ((Health - i) > 4)
-                {
-                    red += "♥";
-
-
-                }
-                else
-                {
-                    grey += "♥";
-                }
+                if ((Health - i) > 4)              
+                    red += "♥";                
+                else               
+                    grey += "♥";                
             }
             return (red, grey);
         }
 
         public void OverWorldTurnMenu()
         {
-            GameMap.UpdateArray();
+            DrawOverWorld();
 
             char keyPressed = GameInputs.K(new List<Char> { 'w', 'a', 's', 'd', 'e', 'q' });
             switch (keyPressed)
@@ -105,7 +103,7 @@ namespace Program
 
                     break;
                 case 'e':
-                    DrawScreen.DrawInventory(this);
+                    DungeonExplorer.GameInstance.WrapPlayer(pInv.DrawInventory("", this));                  
                     break;
                 default:
                     MoveMenu(keyPressed);
@@ -145,7 +143,8 @@ namespace Program
             {
                 pInv.PickUpItem(CurrentRoom.FloorItems[MChoice - 1]); // Add item to inventory
                 CurrentRoom.FloorItems.RemoveAt((MChoice - 1)); // Remove from the floor
-            } else
+            }
+            else
             {
                 Console.WriteLine("You Return");
             }
@@ -157,12 +156,35 @@ namespace Program
             Console.WriteLine(CurrentRoom.GetDescription() + "\nPress Enter To Continue");
             Console.ReadLine();
         }
-       
-        // Menu for moving the player between rooms, using the WASD keys for convinience.
+
+
+
+        public void DrawOverWorld()
+        {
+            string red, grey;
+            (red, grey) = this.UpdateHealthString();
+            var tab = new Table();
+            this.GameMap.UpdateArray();
+
+            string mapstr = "";
+            mapstr += Utils.Convert2DArrayToString(this.GameMap.a);
+            mapstr += ":pushpin: ";
+            mapstr += this.GameMap.getRoomFromArr(this.getPosX(), this.getPosY()).GetDescription();
+            
+            tab.Title = new TableTitle("THE LEGEND OF ZELDA");
+            tab.AddColumn("World Map");
+            tab.AddColumn("Controls");
+
+
+            tab.AddRow("[red]" + red + "[/]" + "[grey]" + grey + "[/]", "WASD - Move around"); // Add
+            tab.AddRow(mapstr, "E - Open Inventory\nQ - Forage For Items");
+            // Render the table to the console
+            AnsiConsole.Render(tab);
+        }
+    
+            // Menu for moving the player between rooms, using the WASD keys for convinience.
         private void MoveMenu(char direction)
         {
-            
-
             int newX = posX;
             int newY = posY;
 
@@ -184,7 +206,6 @@ namespace Program
                 default:
                     break;
             }
-
             // Check if the new position is valid ( Wouldnt send the player off the map )
             if (GameMap.IsValidPosition(newX, newY))
             {
@@ -195,26 +216,10 @@ namespace Program
 
                 CurrentRoom = GameMap.getRoomFromArr(posX, posY); // Update current room
 
-                // Clear the screen and show the updated map
-                Console.Clear();
-                DrawScreen.drawOverWorld(this.GameMap, this);
+                // Clear the screen and show the updated map               
             }
-        }
-
-        // Displays the players current avaliable actions from the ActionMenuFunctions list, and waits for which one theyd like to do.
-        public void ActionMenu()
-        {
-            Console.ForegroundColor = ConsoleColor.Blue;
-            Console.WriteLine("Action Menu:    ");
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            for (int i = 0; i < ActionMenuFunctions.Count; i++)
-            {
-                Console.WriteLine("[" + (i+1) + "] " + ActionMenuFunctions[i].N); // Looping through list to display.
-            }
-            ActionMenuFunctions[(GameInputs.V(ActionMenuFunctions.Count()) - 1)].A(); // Calling the function the user desires.       
-        }
-
-        
+            GameMap.UpdateArray();
+        }     
     }
 
 
@@ -226,7 +231,7 @@ namespace Program
         {
             iCapacity = inCapacity;
            
-            Inventory.Add(new InventoryItem("Sausage Roll", 10, 3)); // Initializes the list of inventory items, adding 3 sausage rolls as a placeholder
+            Inventory.Add(new Food("food","Sausage Roll", 10, 3)); // Initializes the list of inventory items, adding 3 sausage rolls as a placeholder
             
         }
         private int iCapacity;
@@ -245,31 +250,111 @@ namespace Program
         {
             return (Inventory.Contains(item));
         }
-
-        public string GetQueriedList(string Query)
+        public List<InventoryItem> GetQueriedList(string Query)
         {
             List<InventoryItem> Queried = new List<InventoryItem>();
-            switch (Query)
+            if (Query == "" || Query == "a")
+                return (Queried = Inventory);                       
+            Queried = Inventory.Where(InventoryItem => InventoryItem.type == Query).ToList();
+            return Queried;
+        }
+        public Player ShowInventoryItem(InventoryItem item, Player p) {
+            Console.SetCursorPosition(0, 22);
+            List<char> valids = new List<char> { 'd', 'q' };
+            Panel showPanel;
+            if (item.GetType() == typeof(Food))
             {
-                case "weapons":
-                    Queried = Inventory.Where(InventoryItem => InventoryItem.sName == "Sword").ToList();
-                    break;
+                showPanel = new Panel(item.sName + ": " + item.sDescription + "\nType: " + item.type + "\n(D) Remove  (Q) Return to menu (U) Use");
+                valids.Add('u');
             }
-            return InvString(Queried);
+            else
+                showPanel = new Panel(item.sName + ": " + item.sDescription + "\nType: " + item.type + "\n(D) Remove  (Q) Return to menu");
+            
+
+            showPanel.Header = new PanelHeader("Item:");
+            AnsiConsole.Render(showPanel);
+            switch (GameInputs.K(valids))
+            {
+                case 'u':
+                    p = item.Use(p);
+                    this.DeleteItem(item, false);
+                    break;
+                case 'd':
+                    Console.SetCursorPosition(0, 27);
+                    AnsiConsole.Render(new Panel("(1) Remove one\n(A) Remove all\n(C) Cancel") { Header = new PanelHeader("Remove?") });
+                    switch (GameInputs.K(new List<char> { '1', 'c', 'a' }))
+                    {
+                        case '1':
+                            DeleteItem(item, false); break;
+                        case 'a':
+                            DeleteItem(item, true); break;
+                        case 'c':
+                            return p;
+                    }
+                    break;
+                case 'q':
+                    return p;
+            }
+            return p;
         }
-        public string InvString()
+        public Player DrawInventory(string Query, Player p)
         {
-            return InvString(new List<InventoryItem>());
+            Console.Clear();
+            p.DrawOverWorld();
+            Console.SetCursorPosition(0, 17);
+            List<InventoryItem> displayItems = GetQueriedList(Query);
+            Panel invPanel, queryPanel;
+            queryPanel = new Panel("Sorting Options:\n- (A) All\n- (W) Weapons\n- (F) Foods\n- (K) Key Items\nOr:\n- (Q) Leave Menu");
+            if (Query == "")
+                invPanel = new Panel(InvString(displayItems));
+            else
+                invPanel = new Panel(InvString(displayItems));
+
+            invPanel.Header = new PanelHeader("Inventory");
+            queryPanel.Header = new PanelHeader("Options");
+            
+            AnsiConsole.Write(new Columns(invPanel, queryPanel).Collapse());
+            List<char> valids = new List<char> { 'a', 'w', 'f', 'k', 'q' };
+            for (int i = 0; i < displayItems.Count; i++)
+            {
+                valids.Add((char)('0' + i + 1));
+            }
+            char keyPressed = GameInputs.K(valids);
+            int k = keyPressed - '0';
+            if (k < 10)
+            {
+                p = ShowInventoryItem(displayItems[k - 1], p);
+                DrawInventory("", p);
+            }
+            switch (keyPressed)
+            {
+                case 'a':
+                    DrawInventory("", p);
+                    break;
+                case 'w':
+                    DrawInventory("weapon", p);
+                    break;
+                case 'f':
+                    DrawInventory("food", p);
+                    break;
+                case 'k':
+                    DrawInventory("keyitems", p);
+                    break;
+                case 'q':
+                    return p;                    
+            }
+            return p;
         }
-        public string InvString(List<InventoryItem> l)
+        
+        private static string InvString(List<InventoryItem> l)
         {
             if (l.Count == 0)
-                l = Inventory;
+                return "Empty       \n";
 
             string s = String.Empty;
             for (int i = 0; i < l.Count; i++) // Loops through list displaying the item, number they have and the max number they can hold
             {
-                s += "{" + (i + 1).ToString() + "} " + l[i].sName + ": " + l[i].noOfItem.ToString() + "of" + l[i].maxNoOfItem.ToString();
+                s += "(" + (i + 1).ToString() + ") " + l[i].sName + ": " + l[i].noOfItem.ToString() + "of" + l[i].maxNoOfItem.ToString();
                 s += "\n";
             }
             return s;
@@ -286,43 +371,7 @@ namespace Program
             return;
         }
 
-        public void ShowInventory() // Shows the player the current items in there inventory
-        {
-            if (Inventory.Count == 0) // Returns by defualt if inventory is empty
-            {
-                Console.WriteLine("Inventory Empty!! Press Enter To Return");
-                Console.ReadLine();
-                return;
-            }
-
-            string s = String.Empty;
-            for (int i = 0; i < Inventory.Count; i++) // Loops through list displaying the item, number they have and the max number they can hold
-            {
-                s += "{" + (i + 1).ToString() + "} " + Inventory[i].sName + ": " + Inventory[i].noOfItem.ToString() + "of" + Inventory[i].maxNoOfItem.ToString();
-                s += "\n";
-            }
-            return;
-
-            Console.WriteLine("Type the number to inspect, or 0 to skip"); // User input to see if user wants to inspect items or just leave
-            int MChoice = (GameInputs.V(Inventory.Count, 0) - 1); // Minus one so matches list idexing
-            if (MChoice == -1)
-                return; // return if the user wants to
-
-            Console.WriteLine(Inventory[MChoice].sName + ": " + Inventory[MChoice].sDescription); // Displays that item and its description
-            Console.WriteLine("[1] Remove One\n[2] Remove All\n[3] Keep");
-            switch (GameInputs.V(3))
-            {
-                case 1:
-                    DeleteItem(Inventory[MChoice], false); // Removes one of the item
-                    break;
-                case 2:
-                    DeleteItem(Inventory[MChoice], true); // Remove all items
-                    break;
-                case 3:
-                    break; // Leave if user wants to
-            }
-                       
-        }
+        
         // Simple function to delete item. does need a quick linear search to find the index to remove at if removing one.
         public void DeleteItem(InventoryItem ItemToRemove, bool All) // Remove item from the inventory
         {
