@@ -100,7 +100,7 @@ namespace Program
             switch (keyPressed)
             {
                 case 'q':
-
+                    ScoutForItems();
                     break;
                 case 'e':
                     DungeonExplorer.GameInstance.WrapPlayer(pInv.DrawInventory("", this));                  
@@ -114,9 +114,11 @@ namespace Program
         // Function to show the user the current FloorItems that are present in the room theyre in. allows them to inspect, pickup or leave them
         private void ScoutForItems()
         {
+            Console.Clear();
+            DrawOverWorld();
             if (CurrentRoom.FloorItems.Count == 0) // IF no items present displays quick message and returns
             {
-                Console.WriteLine("Theres nothing around here...\nPress enter to return.");
+                AnsiConsole.Write(new Panel("There is nothing around here to collect.\nPress enter to return to main menu"));
                 Console.ReadLine();
                 return;
             }
