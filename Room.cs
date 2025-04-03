@@ -28,17 +28,17 @@ namespace Program
         // and see the description
         public Map(int startingposX, int startingposY)
         {
+            Random rnd = new Random();
             a = new string[sizeX, sizeY];
             Arr = new Room[sizeX, sizeY];
 
             
                 
             // Shops
-            Arr[1, 2] = new Shop("[blue]S[/]", "?", "Sheik's Shop");
-            Arr[4, 6] = new Shop("[blue]S[/]", "?", "Impa's Items");
-            Arr[7, 12] = new Shop("[blue]S[/]", "?", "Nabooru's Nook");
-            Arr[8, 18] = new Shop("[blue]S[/]", "?", "Rauru's Retail");
-
+            Arr[1, 2] = new Shop("[blue]S[/]", "?", "Sheik's Shop", InventoryItem.GetRandomItem(rnd.Next(3)));
+            Arr[4, 6] = new Shop("[blue]S[/]", "?", "Impa's Items", InventoryItem.GetRandomItem(rnd.Next(3)));
+            Arr[7, 12] = new Shop("[blue]S[/]", "?", "Nabooru's Nook", InventoryItem.GetRandomItem(rnd.Next(3)));
+            Arr[8, 18] = new Shop("[blue]S[/]", "?", "Rauru's Retail", InventoryItem.GetRandomItem(rnd.Next(3)));
             // Dungeons
             Arr[0, 15] = new Dungeon("[red]D[/]", "?", "Forest Temple");
             Arr[2, 5] = new Dungeon("[red]D[/]", "?", "Fire Temple");
@@ -61,13 +61,16 @@ namespace Program
             for (int i = 0; i < sizeX; i++)
                 for (int j = 0; j < sizeY; j++)
                     if (Arr[i, j] == null)
+                    {
                         Arr[i, j] = new Room(" ", "?", "Fields of Hyrule");
+                        if (rnd.Next(6) == 1)
+                            Arr[i, j].FloorItems.Add(new Coin(rnd.Next(60)));
+                    }
 
-            Arr[startingposX, startingposY].setFilledIn("⌂");           
+            Arr[startingposX, startingposY].setFilledIn("[purple]⌂[/]");           
             Arr[startingposX, startingposY].setDescription("Your house");
-            Arr[startingposX, startingposY].FloorItems.Add(new Weapon("keyitems", "Master Sword", 1, "The Sword that seals the darkness"));
 
-            
+            Arr[startingposX, startingposY].FloorItems.Add(new Coin(200));
 
             
             Arr[startingposX, startingposY].setC("U");
@@ -126,7 +129,7 @@ namespace Program
         string C; public string getC() { return C; } public void setC(string c) { C = c;  }
         private string description;
 
-        public virtual void Interact() { }
+        public virtual object Interact(Player p) { return null; }
         
 
         public Room(string filledIn, string c, string description)
@@ -152,17 +155,50 @@ namespace Program
 
     public class Shop : Room
     {
-        public Shop(string filledIn, string c, string description) : base(filledIn, c, description) { interactable = true; }
+        public Shop(string filledIn, string c, string description, List<InventoryItem> _saleItems) : base(filledIn, c, description) { 
+            interactable = true;
+            itemsForSale = _saleItems;
+        
+        }
         List<InventoryItem> itemsForSale;
-        public override void Interact()
+        public override object Interact(Player p)
         {
+            Console.SetCursorPosition(0, 17);
+            List<char> valids = new List<char> { 'q' };
+
             string panelText = "Welcome to " + GetDescription() + "\n";
             for (int i = 0; i < itemsForSale.Count; i++)
             {
-                panelText += "(" + (i + 1) + ") " + itemsForSale[i].sName + ": " + itemsForSale[i].sDescription + "£" + itemsForSale[i].SalePrice +"\n";
+                panelText += "(" + (i + 1) + ") " + itemsForSale[i].sName + ": " + itemsForSale[i].sDescription + ": £" + itemsForSale[i].SalePrice +"\n";
+                valids.Add((char)('0' + i + 1));
             }
+            panelText += "Select the number of the item to purchase. Press Q to return to overworld";
             AnsiConsole.Render(new Panel(panelText));
-            Console.ReadLine();
+            char mChoice = GameInputs.K(valids);
+            switch (mChoice)
+            {
+                case 'q':
+                    return p;
+                default:
+                    Console.SetCursorPosition(0, 24);
+                    InventoryItem chosen = itemsForSale[mChoice - '0' - 1];
+                    if(chosen.SalePrice < p.numberOfCoins)
+                    {
+                        p.pInv.PickUpItem(chosen);
+                        p.numberOfCoins = p.numberOfCoins - chosen.SalePrice;
+                        itemsForSale.Remove(chosen);
+                        AnsiConsole.Render(new Panel("Item purchased. Press enter to return to main menu"));
+                        Console.ReadLine();
+                    }
+                    else
+                    {
+                        AnsiConsole.Render(new Panel("You are to poor :c press enter to return to main menu"));
+                        Console.ReadLine();
+                    }
+                    return p;
+            }
+
+
         }
 
     }
@@ -176,10 +212,11 @@ namespace Program
     public class Dungeon : Room
     {
         public Dungeon(string filledIn, string c, string description) : base(filledIn, c, description) { interactable = true; }
-        public override void Interact()
+        public override object Interact(Player p)
         {
             Console.WriteLine("Get a load of this ASSHOOOEWLLL");
             Console.ReadLine();
+            return null;
         }
     }
 }

@@ -3,6 +3,7 @@ using System;
 using System.Linq;
 using System.Diagnostics;
 using Spectre.Console;
+using System.Diagnostics.Eventing.Reader;
 
 
 namespace Program
@@ -41,6 +42,7 @@ namespace Program
     public class Player
     {
         public Map GameMap;
+        public int numberOfCoins;
         public Room CurrentRoom; // Current room player is in
         public List<ActionMenuAction> ActionMenuFunctions = new List<ActionMenuAction>();
         int posX; public void setPosX(int i) { posX = i; }
@@ -48,7 +50,7 @@ namespace Program
         int posY; public void setPosY(int i) { posY = i; }
         public int getPosY() { return posY; }
         public int Health;
-        int MaxHealth { get; set; }
+        public int MaxHealth { get; set; }
         public PlayerInventory pInv; // Instance of PlayerInventory class, representing the players inventory
 
         public void PlayerDebug() // Simple debug functions
@@ -62,13 +64,13 @@ namespace Program
         {
             // Assigning starting values
             Health = 70;
+            numberOfCoins = 10;
             MaxHealth = 100;
             pInv = new PlayerInventory(5); // Initializing inventory
-            posX = 5;
-            posY = 8;
+            posX = 0;
+            posY = 0;
             GameMap = new Map(posX, posY);
             CurrentRoom = GameMap.getRoomFromArr(posX, posY); // Initializing current room
-            pInv.PickUpItem(new Weapon("weapon", "Sword", 1, 1, "Simple, blunt blade."));
 
 
             // Adding the Functions within here to the List of action menu functions
@@ -103,13 +105,13 @@ namespace Program
             switch (keyPressed)
             {
                 case 'r':
-                    this.CurrentRoom.Interact();
+                    this.CurrentRoom.Interact(this);
                     break;
                 case 'q':
                     ScoutForItems();
                     break;
                 case 'e':
-                    DungeonExplorer.GameInstance.WrapPlayer(pInv.DrawInventory("", this));                  
+                    /*DungeonExplorer.GameInstance.WrapPlayer(*/pInv.DrawInventory("", this)/*)*/;                  
                     break;
                 default:
                     MoveMenu(keyPressed);
@@ -157,7 +159,10 @@ namespace Program
                     switch(GameInputs.K(new List<char> { 'e', 'q' }))
                     {
                         case 'e':
-                            pInv.PickUpItem(CurrentRoom.FloorItems[k - 1]); // Add item to inventory
+                            if (CurrentRoom.FloorItems[k - 1].type == "coin")
+                                this.numberOfCoins += CurrentRoom.FloorItems[k - 1].noOfItem;
+                            else
+                                pInv.PickUpItem(CurrentRoom.FloorItems[k - 1]); // Add item to inventory
                             CurrentRoom.FloorItems.RemoveAt((k - 1)); // Remove from the floor
                             return;
                         case 'q':
@@ -190,7 +195,7 @@ namespace Program
             tab.AddColumn("Controls");
 
 
-            tab.AddRow("[red]" + red + "[/]" + "[grey]" + grey + "[/]", "WASD - Move around"); // Add
+            tab.AddRow("[red]" + red + "[/]" + "[grey]" + grey + "[/]" + "  :coin: " + numberOfCoins, "WASD - Move around"); // Add
             tab.AddRow(mapstr, controls);
             // Render the table to the console
             AnsiConsole.Render(tab);
@@ -245,7 +250,6 @@ namespace Program
         {
             iCapacity = inCapacity;
            
-            Inventory.Add(new Food("food","Sausage Roll", 10, 3, "Classic Greggs classic. Eating +20HP")); // Initializes the list of inventory items, adding 3 sausage rolls as a placeholder
             
         }
         private int iCapacity;
@@ -379,7 +383,17 @@ namespace Program
         {
             if (Inventory.Count == iCapacity) // Checking inventory not full
             {
-                Console.WriteLine( "Your inventory is full! You must drop something first");
+                AnsiConsole.Render(new Panel("Inventory is full\nPress enter to return"));
+                Console.ReadLine();
+            }
+            foreach(InventoryItem i in Inventory)
+            {
+                if (i.sName == ItemToAdd.sName)
+                {
+                    i.noOfItem += ItemToAdd.noOfItem;
+                    if (i.noOfItem > i.maxNoOfItem)
+                        i.noOfItem = i.maxNoOfItem;
+                }
             }
             Inventory.Add(ItemToAdd);
             return;

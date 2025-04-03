@@ -8,6 +8,7 @@ namespace Program
     // Main game class, main game loop present in here and entry point.
     public class Game
     {
+
         public void WrapPlayer(Player player)
         {
             P1 = player;

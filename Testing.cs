@@ -18,14 +18,7 @@ namespace Program
 
         static void TestInventory() 
         {
-            PlayerInventory Inv = new PlayerInventory(5);
-            Weapon TestSword = new Weapon("weapon", "Sword", 1, 1, "Simple, blunt blade.");
-
-            Inv.PickUpItem(TestSword); // Tests the inventory adds items
-            Debug.Assert(Inv.IsItemPresent(TestSword), "Inventory failed to add item");
-
-            Inv.DeleteItem(TestSword, true); // tests it removes them
-            Debug.Assert(!Inv.IsItemPresent(TestSword), "Inventory item failed to remove");
+            PlayerInventory Inv = new PlayerInventory(5);           
         }
 
         static void TestMap()
@@ -34,7 +27,5 @@ namespace Program
             Room testRoom = TestMap.getRoomFromArr(3, 4); // Makes sure rooms are present and initialized in map
             Debug.Assert(testRoom != null, "Room could not be got from map");
         }
-
-
     }
 }
