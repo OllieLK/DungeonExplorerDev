@@ -19,7 +19,7 @@ namespace Program
         static void TestInventory() 
         {
             PlayerInventory Inv = new PlayerInventory(5);
-            InventoryItem TestSword = new InventoryItem("weapon", "Sword", 1, 1);
+            Weapon TestSword = new Weapon("weapon", "Sword", 1, 1, "Simple, blunt blade.");
 
             Inv.PickUpItem(TestSword); // Tests the inventory adds items
             Debug.Assert(Inv.IsItemPresent(TestSword), "Inventory failed to add item");

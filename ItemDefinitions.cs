@@ -17,7 +17,7 @@ namespace Program
     {
     }
 
-    public class InventoryItem
+    public abstract class InventoryItem
     {
         public virtual Player Use(Player p) { return null;  }
         public string type;
@@ -25,18 +25,18 @@ namespace Program
         public int noOfItem { get; set; }
         public string sName { get; set; }
         public string sDescription;
-        public InventoryItem(string ntype, string name, int maxNoOfItem)
+        public InventoryItem(string ntype, string name, int maxNoOfItem, string desc)
         {
             type = ntype;
-            sDescription = "A common food item.";
+            sDescription = desc;
             this.sName = name;
             this.maxNoOfItem = maxNoOfItem;
             this.noOfItem = 1;
         }
-        public InventoryItem(string ntype, string name, int maxNoOfItem, int noOfItem)
+        public InventoryItem(string ntype, string name, int maxNoOfItem, int noOfItem, string desc)
         {
             type = ntype;
-            sDescription = "A common food item in hyrule. eating will restore health!";
+            sDescription = desc;
             this.sName = name;
             this.maxNoOfItem = maxNoOfItem;
             this.noOfItem = noOfItem;
@@ -45,17 +45,28 @@ namespace Program
 
     public class Food : InventoryItem
     {
-        public Food(string ntype, string name, int maxNoOfItem) : base(ntype, name, maxNoOfItem)
+        public Food(string ntype, string name, int maxNoOfItem, string desc) : base(ntype, name, maxNoOfItem, desc)
         {
         }
 
-        public Food(string ntype, string name, int maxNoOfItem, int noOfItem) : base(ntype, name, maxNoOfItem, noOfItem)
+        public Food(string ntype, string name, int maxNoOfItem, int noOfItem, string desc) : base(ntype, name, maxNoOfItem, noOfItem, desc)
         {
         }
         public override Player Use(Player p)
         {
             p.Health = p.Health + 20;
             return p;
+        }
+        
+    }
+    public class Weapon : InventoryItem
+    {
+        public Weapon(string ntype, string name, int maxNoOfItem, string desc) : base(ntype, name, maxNoOfItem, desc)
+        {
+        }
+
+        public Weapon(string ntype, string name, int maxNoOfItem, int noOfItem, string desc) : base(ntype, name, maxNoOfItem, noOfItem, desc)
+        {
         }
         
     }

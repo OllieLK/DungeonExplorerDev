@@ -68,11 +68,11 @@ namespace Program
             posY = 8;
             GameMap = new Map(posX, posY);
             CurrentRoom = GameMap.getRoomFromArr(posX, posY); // Initializing current room
-            pInv.PickUpItem(new InventoryItem("weapon", "Sword", 1, 1));
+            pInv.PickUpItem(new Weapon("weapon", "Sword", 1, 1, "Simple, blunt blade."));
 
 
             // Adding the Functions within here to the List of action menu functions
-            ActionMenuFunctions.Add(new ActionMenuAction(ShowRoomDescription, "Show Room Description"));
+            
             ActionMenuFunctions.Add(new ActionMenuAction(ScoutForItems, "Scout Around For Items"));
         }
 
@@ -116,6 +116,8 @@ namespace Program
         {
             Console.Clear();
             DrawOverWorld();
+            string scoutString = "";
+            List<char> valids = new List<char> { 'q' };
             if (CurrentRoom.FloorItems.Count == 0) // IF no items present displays quick message and returns
             {
                 AnsiConsole.Write(new Panel("There is nothing around here to collect.\nPress enter to return to main menu"));
@@ -126,40 +128,40 @@ namespace Program
             {
                 for (int i = 0; i < CurrentRoom.FloorItems.Count; i++) // Displays floor items present in list
                 {
-                    Console.WriteLine("[" + (i + 1) + "] " + CurrentRoom.FloorItems[i].sName);
+                    scoutString += ("(" + (i + 1) + ") " + CurrentRoom.FloorItems[i].sName + "\n");
+                    valids.Add((char)('0' + i + 1));
                 }
             }
 
             // User input for what to do about the floor items
-            Console.WriteLine("Type the number of the item you would like to inspect / pick up.\nIf you dont want to pick any up, press 0");
-            int MChoice = GameInputs.V(CurrentRoom.FloorItems.Count, 0);
-
-            if (MChoice == 0)
+            scoutString += ("Type the number of the item you would like to inspect / pick up.\nIf you dont want to pick any up, press Q");
+            AnsiConsole.Render(new Panel(scoutString));
+            char MChoice = GameInputs.K(valids);
+            
+            switch (MChoice)
             {
-                return; // Returns if user presses 0
-            }
-
-            // Shows description of floor item
-            Console.WriteLine(CurrentRoom.FloorItems[MChoice - 1].sName + ": " + CurrentRoom.FloorItems[MChoice - 1].sDescription + "\n[1] Pickup\n[2] Leave");
-            if (GameInputs.V(2) == 1)
-            {
-                pInv.PickUpItem(CurrentRoom.FloorItems[MChoice - 1]); // Add item to inventory
-                CurrentRoom.FloorItems.RemoveAt((MChoice - 1)); // Remove from the floor
-            }
-            else
-            {
-                Console.WriteLine("You Return");
+                case 'q':
+                    return;
+                default:
+                    int k = MChoice - '0';
+                    Console.SetCursorPosition(0, 22);
+                    scoutString = "";
+                    scoutString += CurrentRoom.FloorItems[k - 1].sName + ": " + CurrentRoom.FloorItems[k - 1].sDescription + "\n(E) Pickup\n(Q) Leave";
+                    AnsiConsole.Render(new Panel(scoutString));
+                    switch(GameInputs.K(new List<char> { 'e', 'q' }))
+                    {
+                        case 'e':
+                            pInv.PickUpItem(CurrentRoom.FloorItems[k - 1]); // Add item to inventory
+                            CurrentRoom.FloorItems.RemoveAt((k - 1)); // Remove from the floor
+                            return;
+                        case 'q':
+                            return;
+                    }
+                    break;
             }
         }
 
-        // Simple function to get and show the current room description
-        private void ShowRoomDescription()
-        {
-            Console.WriteLine(CurrentRoom.GetDescription() + "\nPress Enter To Continue");
-            Console.ReadLine();
-        }
-
-
+        
 
         public void DrawOverWorld()
         {
@@ -233,7 +235,7 @@ namespace Program
         {
             iCapacity = inCapacity;
            
-            Inventory.Add(new Food("food","Sausage Roll", 10, 3)); // Initializes the list of inventory items, adding 3 sausage rolls as a placeholder
+            Inventory.Add(new Food("food","Sausage Roll", 10, 3, "Classic Greggs classic. Eating +20HP")); // Initializes the list of inventory items, adding 3 sausage rolls as a placeholder
             
         }
         private int iCapacity;
@@ -383,7 +385,10 @@ namespace Program
             {
                 if (Inventory[i] == ItemToRemove)
                 {
-                    Inventory[i].noOfItem--; // quick search to find index to remove at
+                    if (Inventory[i].noOfItem != 1)
+                        Inventory[i].noOfItem--; // quick search to find index to remove at
+                    else
+                        Inventory.Remove(ItemToRemove);
                 }
             }
         }

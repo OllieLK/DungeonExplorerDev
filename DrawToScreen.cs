@@ -9,13 +9,6 @@ using System.Reflection.Emit;
 
 namespace Program
 {
-	public class DrawScreen
-	{      
-        
-        public static void DrawForaging() {  }
-	}
-
-
 	public class Save
 	{
 		public static bool saveGame()
