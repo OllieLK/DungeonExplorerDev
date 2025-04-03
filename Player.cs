@@ -95,10 +95,16 @@ namespace Program
         public void OverWorldTurnMenu()
         {
             DrawOverWorld();
-
-            char keyPressed = GameInputs.K(new List<Char> { 'w', 'a', 's', 'd', 'e', 'q' });
+            List<char> Valids = new List<char> { 'w', 'a', 's', 'd', 'e', 'q' };
+            if (CurrentRoom.interactable == true)            
+                Valids.Add('r');
+            
+            char keyPressed = GameInputs.K(Valids);
             switch (keyPressed)
             {
+                case 'r':
+                    this.CurrentRoom.Interact();
+                    break;
                 case 'q':
                     ScoutForItems();
                     break;
@@ -165,11 +171,15 @@ namespace Program
 
         public void DrawOverWorld()
         {
-            string red, grey;
+            string red, grey, controls;
             (red, grey) = this.UpdateHealthString();
             var tab = new Table();
             this.GameMap.UpdateArray();
-
+            controls = "E - Open Inventory\nQ - Forage For Items";
+            if (CurrentRoom.interactable == true)
+            {
+                controls += "\nR - Interact";
+            }
             string mapstr = "";
             mapstr += Utils.Convert2DArrayToString(this.GameMap.a);
             mapstr += ":pushpin: ";
@@ -181,7 +191,7 @@ namespace Program
 
 
             tab.AddRow("[red]" + red + "[/]" + "[grey]" + grey + "[/]", "WASD - Move around"); // Add
-            tab.AddRow(mapstr, "E - Open Inventory\nQ - Forage For Items");
+            tab.AddRow(mapstr, controls);
             // Render the table to the console
             AnsiConsole.Render(tab);
         }
@@ -375,9 +385,7 @@ namespace Program
             return;
         }
 
-        
-        // Simple function to delete item. does need a quick linear search to find the index to remove at if removing one.
-        public void DeleteItem(InventoryItem ItemToRemove, bool All) // Remove item from the inventory
+        public void DeleteItem(InventoryItem ItemToRemove, bool All, bool Keyitem)
         {
             if (All)
                 Inventory.Remove(ItemToRemove);
@@ -390,6 +398,31 @@ namespace Program
                     else
                         Inventory.Remove(ItemToRemove);
                 }
+            }
+        }
+        // Simple function to delete item. does need a quick linear search to find the index to remove at if removing one.
+        public void DeleteItem(InventoryItem ItemToRemove, bool All) // Remove item from the inventory
+        {
+            if (ItemToRemove.type != "keyitems")
+            {
+                if (All)
+                    Inventory.Remove(ItemToRemove);
+                for (int i = 0; i < Inventory.Count; i++)
+                {
+                    if (Inventory[i] == ItemToRemove)
+                    {
+                        if (Inventory[i].noOfItem != 1)
+                            Inventory[i].noOfItem--; // quick search to find index to remove at
+                        else
+                            Inventory.Remove(ItemToRemove);
+                    }
+                }
+            }
+            else
+            {
+                Console.SetCursorPosition(0, 29);
+                AnsiConsole.Render(new Panel("Cannot remove key items\nPress Enter to return"));
+                Console.ReadLine();
             }
         }
     }

@@ -13,12 +13,14 @@ namespace Program
     /// </summary>
     /// 
 
-    interface iUsable
+    interface iSellable
     {
+        
     }
 
-    public abstract class InventoryItem
+    public abstract class InventoryItem : iSellable
     {
+        public int SalePrice;
         public virtual Player Use(Player p) { return null;  }
         public string type;
         public int maxNoOfItem { get; set; }

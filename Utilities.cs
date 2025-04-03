@@ -6,7 +6,7 @@ namespace Program
 {
     public class Utils
     {
-        public static string Convert2DArrayToString(char[,] array)
+        public static string Convert2DArrayToString(string[,] array)
         {
             // Initialize an empty string to hold the result
             string result = string.Empty;
