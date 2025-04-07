@@ -13,8 +13,8 @@ namespace Program
         public static void Main(string[] Args)
         {
             p = new SoundPlayer("Legend of Zelda (NES) Intro.wav");
-            //p.Play();
-            
+            p.Play();
+
             Console.CursorVisible = false;
             
             try

@@ -1,4 +1,5 @@
-﻿using Spectre.Console;
+﻿using DungeonExplorer;
+using Spectre.Console;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -35,46 +36,42 @@ namespace Program
             
                 
             // Shops
-            Arr[1, 2] = new Shop("[blue]S[/]", "?", "Sheik's Shop", InventoryItem.GetRandomItem(rnd.Next(3)));
-            Arr[4, 6] = new Shop("[blue]S[/]", "?", "Impa's Items", InventoryItem.GetRandomItem(rnd.Next(3)));
-            Arr[7, 12] = new Shop("[blue]S[/]", "?", "Nabooru's Nook", InventoryItem.GetRandomItem(rnd.Next(3)));
-            Arr[8, 18] = new Shop("[blue]S[/]", "?", "Rauru's Retail", InventoryItem.GetRandomItem(rnd.Next(3)));
+            Arr[1, 2] = new Shop("Sheik's Shop", InventoryItem.GetRandomItem(rnd.Next(3)));
+            Arr[4, 6] = new Shop("Impa's Items", InventoryItem.GetRandomItem(rnd.Next(3)));
+            Arr[7, 12] = new Shop("Nabooru's Nook", InventoryItem.GetRandomItem(rnd.Next(3)));
+            Arr[8, 18] = new Shop("Rauru's Retail", InventoryItem.GetRandomItem(rnd.Next(3)));
             // Dungeons
-            Arr[0, 15] = new Dungeon("[red]D[/]", "?", "Forest Temple");
-            Arr[2, 5] = new Dungeon("[red]D[/]", "?", "Fire Temple");
-            Arr[3, 10] = new Dungeon("[red]D[/]", "?", "Water Temple");
-            Arr[5, 4] = new Dungeon("[red]D[/]", "?", "Shadow Temple");
-            Arr[5, 15] = new Dungeon("[red]D[/]", "?", "Spirit Temple");
-            Arr[6, 2] = new Dungeon("[red]D[/]", "?", "Ice Cavern");
-            Arr[6, 10] = new Dungeon("[red]D[/]", "?", "Stone Tower");
-            Arr[7, 5] = new Dungeon("[red]D[/]", "?", "Skyward Sword Temple");
-            Arr[8, 8] = new Dungeon("[red]D[/]", "?", "Dark Link's Lair");
-            Arr[9, 14] = new Dungeon("[red]D[/]", "?", "Temple of Time");
+            Arr[0, 15] = new Dungeon("Forest Temple");
+            Arr[2, 5] = new Dungeon("Fire Temple");
+            Arr[3, 10] = new Dungeon("Water Temple");
+            Arr[5, 4] = new Dungeon("Shadow Temple");
+            Arr[5, 15] = new Dungeon("Spirit Temple");
+            Arr[6, 2] = new Dungeon("Ice Cavern");
+            Arr[6, 10] = new Dungeon("Stone Tower");
+            Arr[7, 5] = new Dungeon("Skyward Sword Temple");
+            Arr[8, 8] = new Dungeon("Dark Link's Lair");
+            Arr[9, 14] = new Dungeon("Temple of Time");
 
             // NPC Rooms
-            Arr[0, 5] = new NPCroom("[yellow]N[/]", "?", "Old Man");
-            Arr[3, 3] = new NPCroom("[yellow]N[/]", "?", "Impa");
-            Arr[5, 10] = new NPCroom("[yellow]N[/]", "?", "Nabooru");
-            Arr[7, 8] = new NPCroom("[yellow]N[/]", "?", "Tingle");
-            Arr[9, 12] = new NPCroom("[yellow]N[/]", "?", "The Great Fairy");
+            Arr[0, 5] = new NPCroom("Old Man");
+            Arr[3, 3] = new NPCroom("Impa");
+            Arr[5, 10] = new NPCroom("Nabooru");
+            Arr[7, 8] = new NPCroom("Tingle");
+            Arr[9, 12] = new NPCroom("The Great Fairy");
 
             for (int i = 0; i < sizeX; i++)
                 for (int j = 0; j < sizeY; j++)
                     if (Arr[i, j] == null)
                     {
-                        Arr[i, j] = new Room(" ", "?", "Fields of Hyrule");
-                        if (rnd.Next(6) == 1)
+                        Arr[i, j] = new Field("Fields of Hyrule");
+                        if (rnd.Next(3) == 1)
                             Arr[i, j].FloorItems.Add(new Coin(rnd.Next(60)));
                     }
 
-            Arr[startingposX, startingposY].setFilledIn("[purple]⌂[/]");           
-            Arr[startingposX, startingposY].setDescription("Your house");
-
-            Arr[startingposX, startingposY].FloorItems.Add(new Coin(200));
-
-            
+            Arr[startingposX, startingposY].setFilledIn("[purple]H[/]");           
+            Arr[startingposX, startingposY].setDescription("Your house");         
             Arr[startingposX, startingposY].setC("U");
-            UpdateArray();
+            UpdateArray(); 
         }
 
         // Shows The map after each "Turn"
@@ -89,8 +86,7 @@ namespace Program
                     a[i, j] = Arr[i, j].getC();
                     //Console.Write(Arr[i, j].getC()); // Display the character of the room
                 }
-            }
-            
+            }           
         }
 
         // Updates the map after a player moves between rooms
@@ -121,24 +117,22 @@ namespace Program
         object interact();
     }
 
-    public class Room
+    public abstract class Room
     {
         public bool interactable;
+
         public List<InventoryItem> FloorItems = new List<InventoryItem>(); // List for floor items.
-        string FilledIn; public string getFilledIn() { return FilledIn;  } public void setFilledIn(string c) { FilledIn = c; }
-        string C; public string getC() { return C; } public void setC(string c) { C = c;  }
-        private string description;
+
+        protected string FilledIn; public string getFilledIn() { return FilledIn;  } public void setFilledIn(string c) { FilledIn = c; }
+        protected string C; public string getC() { return C; } public void setC(string c) { C = c;  }
+        protected string description;
 
         public virtual object Interact(Player p) { return null; }
-        
-
-        public Room(string filledIn, string c, string description)
+       
+        public Room(string Description)
         {
-            interactable = false;
-            // Basic constructor assigning variables
-            FilledIn = filledIn;
-            C = c;
-            this.description = description;
+            interactable = false;            
+            description = Description;
         }
 
         // Getters and setters for description
@@ -152,13 +146,22 @@ namespace Program
         }
     }
 
+    public class Field : Room
+    {
+        public Field(string description) : base(description)
+        {
+            C = "?";
+            FilledIn = " ";
+        }
+    }
 
     public class Shop : Room
     {
-        public Shop(string filledIn, string c, string description, List<InventoryItem> _saleItems) : base(filledIn, c, description) { 
+        public Shop(string description, List<InventoryItem> _saleItems) : base(description) { 
             interactable = true;
             itemsForSale = _saleItems;
-        
+            C = "?";
+            FilledIn = "[blue]S[/]";
         }
         List<InventoryItem> itemsForSale;
         public override object Interact(Player p)
@@ -197,25 +200,36 @@ namespace Program
                     }
                     return p;
             }
-
-
         }
 
     }
 
     public class NPCroom : Room
     {
-        public NPCroom(string filledIn, string c, string description) : base(filledIn, c, description) { interactable = true; }
-
+        public NPCroom(string description) : base(description) { 
+            interactable = true;
+            C = "?";
+            FilledIn = "[yellow]N[/]";
+        }
     }
 
     public class Dungeon : Room
     {
-        public Dungeon(string filledIn, string c, string description) : base(filledIn, c, description) { interactable = true; }
+        int floorsCompleted;
+        List<Floor> floors;
+
+        public Dungeon(string description) : base(description) { 
+            interactable = true;
+            C ="?";
+            FilledIn = "[red]D[/]";
+            
+            floorsCompleted = 0;
+        }
         public override object Interact(Player p)
         {
-            Console.WriteLine("Get a load of this ASSHOOOEWLLL");
+            AnsiConsole.Render(new Panel(description + "    Rooms Completed: " + floorsCompleted + "/" + floors.Count));
             Console.ReadLine();
+
             return null;
         }
     }
