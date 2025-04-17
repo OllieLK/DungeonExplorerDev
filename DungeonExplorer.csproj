@@ -62,7 +62,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DrawToScreen.cs" />
+    <Compile Include="Saving.cs" />
+    <Compile Include="Enemy.cs" />
     <Compile Include="Floor.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="ItemDefinitions.cs" />

@@ -32,7 +32,8 @@ namespace Program
             Random rnd = new Random();
             a = new string[sizeX, sizeY];
             Arr = new Room[sizeX, sizeY];
-
+            List<Floor> floorList = new List<Floor>();
+            //floorList.Add(new Floor());
             
                 
             // Shops
@@ -41,16 +42,16 @@ namespace Program
             Arr[7, 12] = new Shop("Nabooru's Nook", InventoryItem.GetRandomItem(rnd.Next(3)));
             Arr[8, 18] = new Shop("Rauru's Retail", InventoryItem.GetRandomItem(rnd.Next(3)));
             // Dungeons
-            Arr[0, 15] = new Dungeon("Forest Temple");
-            Arr[2, 5] = new Dungeon("Fire Temple");
-            Arr[3, 10] = new Dungeon("Water Temple");
-            Arr[5, 4] = new Dungeon("Shadow Temple");
-            Arr[5, 15] = new Dungeon("Spirit Temple");
-            Arr[6, 2] = new Dungeon("Ice Cavern");
-            Arr[6, 10] = new Dungeon("Stone Tower");
-            Arr[7, 5] = new Dungeon("Skyward Sword Temple");
-            Arr[8, 8] = new Dungeon("Dark Link's Lair");
-            Arr[9, 14] = new Dungeon("Temple of Time");
+            Arr[0, 15] = new Dungeon("Forest Temple", floorList);
+            Arr[2, 5] = new Dungeon("Fire Temple", floorList);
+            Arr[3, 10] = new Dungeon("Water Temple", floorList);
+            Arr[5, 4] = new Dungeon("Shadow Temple", floorList);
+            Arr[5, 15] = new Dungeon("Spirit Temple", floorList);
+            Arr[6, 2] = new Dungeon("Ice Cavern", floorList);
+            Arr[6, 10] = new Dungeon("Stone Tower", floorList);
+            Arr[7, 5] = new Dungeon("Skyward Sword Temple", floorList);
+            Arr[8, 8] = new Dungeon("Dark Link's Lair", floorList);
+            Arr[9, 14] = new Dungeon("Temple of Time", floorList);
 
             // NPC Rooms
             Arr[0, 5] = new NPCroom("Old Man");
@@ -150,7 +151,7 @@ namespace Program
     {
         public Field(string description) : base(description)
         {
-            C = "?";
+            C = "[green]?[/]";
             FilledIn = " ";
         }
     }
@@ -216,20 +217,42 @@ namespace Program
     public class Dungeon : Room
     {
         int floorsCompleted;
+        int currentFloor;
         List<Floor> floors;
-
-        public Dungeon(string description) : base(description) { 
+        
+        public Dungeon(string description, List<Floor> _floors) : base(description)
+        {
+            floors = new List<Floor>
+            {
+                new ChestFloor(InventoryItem.GetRandomItem(), this)
+            };
             interactable = true;
             C ="?";
             FilledIn = "[red]D[/]";
-            
+            //floors = _floors;
             floorsCompleted = 0;
+            currentFloor = 0;
+        }
+        private void DungeonCompleted()
+        {
+            interactable = false;
+            C = "[green]D[/]";
         }
         public override object Interact(Player p)
         {
-            AnsiConsole.Render(new Panel(description + "    Rooms Completed: " + floorsCompleted + "/" + floors.Count));
-            Console.ReadLine();
-
+            Console.SetCursorPosition(0, 17);
+            AnsiConsole.Render(new Panel(description + "    Floors Completed: " + floorsCompleted + "/" + floors.Count + "\n\n(Y) Go to entrance     (Enter) Leave"));
+            if (GameInputs.K(new List<char> { 'y' }) == 'y')
+            {
+                floors[currentFloor].DoFLoor(p, currentFloor);
+                currentFloor++;
+                floorsCompleted++;
+                if (floorsCompleted == floors.Count)
+                    DungeonCompleted();
+            } else
+            {
+                return p;
+            }
             return null;
         }
     }

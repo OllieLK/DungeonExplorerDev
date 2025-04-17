@@ -17,14 +17,7 @@ namespace Program
 
             Console.CursorVisible = false;
             
-            try
-            {
-                Testing.RunTests(); // Run tests at start of game.
-            }
-            catch
-            {
-                Console.WriteLine("Failed during tests");
-            }
+           
             
             GameInstance = new Game();
             GameInstance.titleScreen();

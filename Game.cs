@@ -19,7 +19,7 @@ namespace Program
         public Game()
         {
             Console.OutputEncoding = System.Text.Encoding.Unicode;
-            
+            InventoryItem.initRandomItems();
             P1 = new Player();
             P1.GameMap.UpdateMap(P1.getPosX(), P1.getPosY(), P1.getPosX(), P1.getPosY());
         }

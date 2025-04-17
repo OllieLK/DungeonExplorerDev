@@ -28,12 +28,11 @@ namespace Program
         public int noOfItem { get; set; }
         public string sName { get; set; }
         public string sDescription;
+        private static List<InventoryItem> RandomItems;
 
-        public static List<InventoryItem> GetRandomItem(int ammount)
+        public static void initRandomItems()
         {
-            Random rnd = new Random();
-            List<InventoryItem> items = new List<InventoryItem>();
-            List<InventoryItem> RandomItems = new List<InventoryItem>
+            RandomItems = new List<InventoryItem>
             {
                 new Food("Hearty Apple", 20, 20, "Common Hyrulian Apple. Eating +10", 20, 10),
                 new Food("Hylian Mushroom", 30, 30, "Common mushroom. Eating +5", 15, 5),
@@ -46,6 +45,18 @@ namespace Program
                 new Weapon("Shadowfang", 1, 1, "A cursed dagger that drains life. 50 Damage", 150, 50),
                 new Weapon("Frostmourne", 1, 1, "A legendary sword of ice, chilling foes with 100 Damage", 300, 100),
             };
+        }
+
+        public static InventoryItem GetRandomItem()
+        {
+            Random rnd = new Random();
+            return RandomItems[rnd.Next(RandomItems.Count)];
+        }
+        public static List<InventoryItem> GetRandomItem(int ammount)
+        {
+            Random rnd = new Random();
+            List<InventoryItem> items = new List<InventoryItem>();
+            
             for (int i = 0; i < ammount; i++)
                 items.Add(RandomItems[rnd.Next(RandomItems.Count)]);
 
@@ -54,6 +65,7 @@ namespace Program
         public InventoryItem() { }
         public InventoryItem(string name, int maxNoOfItem, int noOfItem, string desc, int price)
         {
+            
             SalePrice = price;
             sDescription = desc;
             this.sName = name;

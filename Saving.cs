@@ -9,11 +9,15 @@ using System.Reflection.Emit;
 
 namespace Program
 {
-	public class Save
+	interface ISaveData
 	{
-		public static bool saveGame()
+		string getSaveData();
+	}
+	public static class Save
+	{
+		public async static void saveGame()
 		{
-			return true;
+
 		}
         public static bool loadGame() { 
             throw new NotImplementedException();
