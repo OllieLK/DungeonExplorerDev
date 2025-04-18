@@ -1,4 +1,4 @@
-﻿using DungeonExplorer;
+﻿using Program;
 using Spectre.Console;
 using System;
 using System.Collections.Generic;
@@ -227,6 +227,7 @@ namespace Program
             floors = new List<Floor>
             {
                 new ChestFloor(InventoryItem.GetRandomItem(), this),
+                new RestFloor(this),
                 new BattleFloor(this)
             };
             numOfFloors = floors.Count;
@@ -242,22 +243,32 @@ namespace Program
             interactable = false;
             C = "[green]D[/]";
         }
+        private void DungeonLoop(Player p)
+        {
+            bool exitDung = floors[currentFloor - 1].DoFLoor(p, currentFloor);
+            currentFloor++;
+            floorsCompleted++;
+            if (floorsCompleted == floors.Count)
+                DungeonCompleted();
+            if (exitDung)
+                return;
+            else
+                DungeonLoop(p);
+        }
         public override object Interact(Player p)
         {
-            Console.SetCursorPosition(0, 17);
-            AnsiConsole.Render(new Panel(description + "    Floors Completed: " + floorsCompleted + "/" + floors.Count + "\n\n(Y) Go to entrance     (Enter) Leave"));
-            if (GameInputs.K(new List<char> { 'y' }) == 'y')
+            Console.Clear();
+            p.DrawOverWorld(false);
+            AnsiConsole.Render(new Panel(description + "    Floors Completed: " + floorsCompleted + "/" + floors.Count + "\n\n(Y) Go to entrance     (N) Leave"));
+            if (GameInputs.K(new List<char> { 'y', 'n' }) == 'y')
             {
-                floors[currentFloor - 1].DoFLoor(p, currentFloor);
-                currentFloor++;
-                floorsCompleted++;
-                if (floorsCompleted == floors.Count)
-                    DungeonCompleted();
+                
+                DungeonLoop(p);
+                return p;
             } else
             {
                 return p;
             }
-            return null;
         }
     }
 }

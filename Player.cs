@@ -4,7 +4,6 @@ using System.Linq;
 using System.Diagnostics;
 using Spectre.Console;
 using System.Diagnostics.Eventing.Reader;
-using DungeonExplorer;
 
 
 namespace Program
@@ -214,7 +213,7 @@ namespace Program
             }
             else
             {
-                tab.AddRow(healthstr + numberOfCoins); // Add
+                tab.AddRow(healthstr + "                   [olive]" + numberOfCoins + " Coins[/]"); // Add
                 tab.AddRow(mapstr);
             }
             // Render the table to the console
