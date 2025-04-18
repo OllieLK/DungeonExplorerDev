@@ -74,6 +74,10 @@ namespace Program
             return 0;
         }
 
+        public static Char K() // Overload incase just require yes or no keyboard inputs to save time.
+        {
+            return K(new List<char> { 'y', 'n' });
+        }
         // Some times in the game key inputs are used. This function gets key inputs and checks that they are valid, in the array given to it.
         public static Char K(List<char> ValidKeys)
         {

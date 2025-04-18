@@ -1,37 +1,66 @@
-﻿using System;
+﻿using Spectre.Console;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DungeonExplorer
+namespace Program
 {
-    public class BattleMoves { }
-
-
-
-    public abstract class BattleEntity
+    public class Battle
     {
-        public int health;
-        public int maxHealth;
-        public List<BattleMoves> moves;
-
-
-        public virtual void attack()
+        private Player Player;
+        private List<BattleEntity> Enemies;
+        public Battle(Player p, List<BattleEntity> e, string firstTurn)
         {
-            throw new NotImplementedException();
+            Player = p;
+            Enemies = e;
+            AnsiConsole.Clear();
+            Player.DrawOverWorld(false);
+            drawBattle(firstTurn);
+        }
+        private void drawBattle(string nextTurn)
+        {
+            Table tab = new Table();
+            tab.Title = new TableTitle("FIGHT!!!");
+            string playerhealth;
+            playerhealth = Player.UpdateHealthString();
+            tab.AddColumn(playerhealth);
+            AnsiConsole.Render(tab);
+            Console.ReadLine();
         }
     }
 
-    interface iBattleEntity
-    {
-        void Attack();
-        void Damage();
+    public class BattleMoves {
+        public object Move()
+        {
+            return null;
+        }
     }
+
+    public abstract class BattleEntity
+    {
+        public int Health;
+        public int MaxHealth;
+        public List<BattleMoves> moves;
+
+        public abstract void Battleturn();
+        public abstract void onDeath();
+    }
+
+    
 
     public class Enemy : BattleEntity
     {
-
+        public override void Battleturn()
+        {
+            throw new NotImplementedException();
+        }
+        public override void onDeath()
+        {
+            throw new NotImplementedException();
+        }
     }
 
 }

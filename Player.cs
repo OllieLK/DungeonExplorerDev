@@ -4,6 +4,7 @@ using System.Linq;
 using System.Diagnostics;
 using Spectre.Console;
 using System.Diagnostics.Eventing.Reader;
+using DungeonExplorer;
 
 
 namespace Program
@@ -39,7 +40,7 @@ namespace Program
         }
     }
     
-    public class Player
+    public class Player : BattleEntity
     {
         public Map GameMap;
         public int numberOfCoins;
@@ -49,8 +50,7 @@ namespace Program
         public int getPosX() { return posX; } // The current position of the player within the map
         int posY; public void setPosY(int i) { posY = i; }
         public int getPosY() { return posY; }
-        public int Health;
-        public int MaxHealth { get; set; }
+        
         public PlayerInventory pInv; // Instance of PlayerInventory class, representing the players inventory
 
         public void PlayerDebug() // Simple debug functions
@@ -60,8 +60,19 @@ namespace Program
             Debug.Assert(ActionMenuFunctions.Count() > 0);
         }
 
+        // Battle related functions for player
+        public override void Battleturn()
+        {
+            throw new NotImplementedException();
+        }
+        public override void onDeath()
+        {
+            throw new NotImplementedException();
+        }
+
         public Player()
         {
+            
             // Assigning starting values
             Health = 70;
             numberOfCoins = 10;
@@ -80,23 +91,23 @@ namespace Program
 
 
         // Basic function to show the players health, made to look nice using colours and unicode characters.
-        public (string, string) UpdateHealthString()
+        public string UpdateHealthString()
         {
             string red = string.Empty;
             string grey = string.Empty;
             for (int i = 0; i < MaxHealth; i = i + 10)
             {
                 if ((Health - i) > 4)              
-                    red += "♥";                
+                    red += "[red]♥[/]";                
                 else               
-                    grey += "♥";                
+                    grey += "[grey]♥[/]";                
             }
-            return (red, grey);
+            return (red + grey);
         }
 
         public void OverWorldTurnMenu()
         {
-            DrawOverWorld();
+            DrawOverWorld(true);
             List<char> Valids = new List<char> { 'w', 'a', 's', 'd', 'e', 'q' };
             if (CurrentRoom.interactable == true)            
                 Valids.Add('r');
@@ -123,7 +134,7 @@ namespace Program
         private void ScoutForItems()
         {
             Console.Clear();
-            DrawOverWorld();
+            DrawOverWorld(false);
             string scoutString = "";
             List<char> valids = new List<char> { 'q' };
             if (CurrentRoom.FloorItems.Count == 0) // IF no items present displays quick message and returns
@@ -174,13 +185,13 @@ namespace Program
 
         
 
-        public void DrawOverWorld()
+        public void DrawOverWorld(bool showControls)
         {
-            string red, grey, controls;
-            (red, grey) = this.UpdateHealthString();
+            string controls;
+            string healthstr = this.UpdateHealthString();
             var tab = new Table();
             this.GameMap.UpdateArray();
-            controls = "E - Open Inventory\nQ - Forage For Items";
+            controls = "WASD - Move around\nE - Open Inventory\nQ - Forage For Items";
             if (CurrentRoom.interactable == true)
             {
                 controls += "\nR - Interact";
@@ -192,11 +203,20 @@ namespace Program
             
             tab.Title = new TableTitle("THE LEGEND OF ZELDA");
             tab.AddColumn("World Map");
-            tab.AddColumn("Controls");
+            
 
 
-            tab.AddRow("[red]" + red + "[/]" + "[grey]" + grey + "[/]" + "  :coin: " + numberOfCoins, "WASD - Move around"); // Add
-            tab.AddRow(mapstr, controls);
+            if (showControls)
+            {
+                tab.AddColumn("Controls");
+                tab.AddRow(healthstr + "                   [olive]" + numberOfCoins + " Coins[/]"); // Add
+                tab.AddRow(mapstr, controls);
+            }
+            else
+            {
+                tab.AddRow(healthstr + numberOfCoins); // Add
+                tab.AddRow(mapstr);
+            }
             // Render the table to the console
             AnsiConsole.Render(tab);
         }
@@ -318,7 +338,7 @@ namespace Program
         public Player DrawInventory(string Query, Player p)
         {
             Console.Clear();
-            p.DrawOverWorld();
+            p.DrawOverWorld(false);
             Console.SetCursorPosition(0, 17);
             List<InventoryItem> displayItems = GetQueriedList(Query);
             Panel invPanel, queryPanel;

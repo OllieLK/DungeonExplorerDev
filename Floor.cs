@@ -16,11 +16,13 @@ namespace DungeonExplorer
         {
             dungeon = d;
         }
+        
         public abstract void DoFLoor(Player p, int floorNum);
-        protected virtual void drawFloor(string drawitem, string roomcontrols) {
+        protected virtual void drawFloor(string drawitem, string roomcontrols, int floornum) {
             Table tab = new Table();
-            tab.Title = new TableTitle(dungeon.GetDescription());
+            tab.Title = new TableTitle(dungeon.GetDescription() + ": Room " + floornum + "/" + dungeon.numOfFloors);
             tab.AddColumn(drawitem);
+            tab.AddColumn(roomcontrols);
             AnsiConsole.Render(tab);
         }       
     }
@@ -28,11 +30,12 @@ namespace DungeonExplorer
     public class BattleFloor : Floor {
         public BattleFloor(Dungeon d) : base(d)
         {
-        }
 
+        }
+        Battle b;
         public override void DoFLoor(Player p, int f)
         {
-            throw new NotImplementedException();
+            
         }
     }
     public class RestFloor : Floor {
@@ -51,13 +54,15 @@ namespace DungeonExplorer
             chestItem = _chestItem;
         }
         public override void DoFLoor(Player p, int f)
-        {
-            Console.Clear();
+        {            
             string panelstr;
             panelstr = "This room contains a chest!!!\n" + chestItem.sName + ": " + chestItem.sDescription + "      " + chestItem.noOfItem;
-            panelstr += "(y) Pickup     (n) Proceed to next room";
-            drawFloor(panelstr);
-            Console.ReadLine();
+            drawFloor(panelstr, "(y) Pickup\n(n) leave behind", f);
+            if (GameInputs.K() == 'y')
+            {
+                p.pInv.PickUpItem(chestItem);
+            }
+            Program.DungeonExplorer.GameInstance.WrapPlayer(p);           
         }
     }
     public class SpecialFloor : Floor {

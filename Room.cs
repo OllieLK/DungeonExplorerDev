@@ -151,7 +151,7 @@ namespace Program
     {
         public Field(string description) : base(description)
         {
-            C = "[green]?[/]";
+            C = "?";
             FilledIn = " ";
         }
     }
@@ -219,19 +219,23 @@ namespace Program
         int floorsCompleted;
         int currentFloor;
         List<Floor> floors;
-        
+        public int numOfFloors { get; }
+
+
         public Dungeon(string description, List<Floor> _floors) : base(description)
         {
             floors = new List<Floor>
             {
-                new ChestFloor(InventoryItem.GetRandomItem(), this)
+                new ChestFloor(InventoryItem.GetRandomItem(), this),
+                new BattleFloor(this)
             };
+            numOfFloors = floors.Count;
             interactable = true;
             C ="?";
             FilledIn = "[red]D[/]";
             //floors = _floors;
             floorsCompleted = 0;
-            currentFloor = 0;
+            currentFloor = 1;
         }
         private void DungeonCompleted()
         {
@@ -244,7 +248,7 @@ namespace Program
             AnsiConsole.Render(new Panel(description + "    Floors Completed: " + floorsCompleted + "/" + floors.Count + "\n\n(Y) Go to entrance     (Enter) Leave"));
             if (GameInputs.K(new List<char> { 'y' }) == 'y')
             {
-                floors[currentFloor].DoFLoor(p, currentFloor);
+                floors[currentFloor - 1].DoFLoor(p, currentFloor);
                 currentFloor++;
                 floorsCompleted++;
                 if (floorsCompleted == floors.Count)

@@ -12,9 +12,8 @@ namespace Program
 
         public static void Main(string[] Args)
         {
-            p = new SoundPlayer("Legend of Zelda (NES) Intro.wav");
-            p.Play();
-
+            p = new SoundPlayer("Final Fantasy VII - Prelude (Original Soundtrack).wav");
+            //p.PlayLooping();
             Console.CursorVisible = false;
             
            
