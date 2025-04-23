@@ -4,6 +4,7 @@ using Spectre.Console.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -33,6 +34,7 @@ namespace Program
     }
         public class BattleFloor : Floor
         {
+            
             public BattleFloor(Dungeon d) : base(d)
             {
 
@@ -40,7 +42,9 @@ namespace Program
             Battle b;
             public override bool DoFLoor(Player p, int f)
             {
-                throw new NotImplementedException();
+                b = new Battle(p, null, "p");
+
+                return true;
             }
         }
         public class RestFloor : Floor

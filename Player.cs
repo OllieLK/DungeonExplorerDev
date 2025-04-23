@@ -41,6 +41,7 @@ namespace Program
     
     public class Player : BattleEntity
     {
+        
         public Map GameMap;
         public int numberOfCoins;
         public Room CurrentRoom; // Current room player is in
@@ -60,9 +61,22 @@ namespace Program
         }
 
         // Battle related functions for player
-        public override void Battleturn()
+        public override object Battleturn(BattleEntity target)
         {
-            throw new NotImplementedException();
+            string displayString = string.Empty;
+            List<char> ValidInputs = new List<char>();
+            var FilteredInventory = pInv.GetQueriedList("weapon");
+            List<Weapon> Weapons = new List<Weapon>();
+            for (int i = 0; i < FilteredInventory.Count; i++)
+            {
+                Weapons.Add(FilteredInventory[i] as Weapon);
+                ValidInputs.Add((char)('0' + i + 1));
+                displayString += "(" + (i + 1) + ")" + FilteredInventory[i].sName + "\n";
+            }
+            AnsiConsole.Render(new Panel(displayString));
+            Weapon SelectedWeapon = Weapons[GameInputs.K(ValidInputs) - '0' - 1];
+            target.Health -= SelectedWeapon.Damage;
+            return target;
         }
         public override void onDeath()
         {
@@ -71,8 +85,10 @@ namespace Program
 
         public Player()
         {
-            
+
             // Assigning starting values
+            BattleEffect = new StatusEffect();
+            name = "Link";
             Health = 70;
             numberOfCoins = 10;
             MaxHealth = 100;
@@ -82,27 +98,13 @@ namespace Program
             GameMap = new Map(posX, posY);
             CurrentRoom = GameMap.getRoomFromArr(posX, posY); // Initializing current room
 
-
             // Adding the Functions within here to the List of action menu functions
             
             ActionMenuFunctions.Add(new ActionMenuAction(ScoutForItems, "Scout Around For Items"));
         }
 
 
-        // Basic function to show the players health, made to look nice using colours and unicode characters.
-        public string UpdateHealthString()
-        {
-            string red = string.Empty;
-            string grey = string.Empty;
-            for (int i = 0; i < MaxHealth; i = i + 10)
-            {
-                if ((Health - i) > 4)              
-                    red += "[red]♥[/]";                
-                else               
-                    grey += "[grey]♥[/]";                
-            }
-            return (red + grey);
-        }
+        
 
         public void OverWorldTurnMenu()
         {
@@ -334,8 +336,31 @@ namespace Program
             }
             return p;
         }
+        // Checks for duplicate items and stacks them neatly
+        private void UpdateInv()
+        {
+            if (Inventory.Count == 1)
+                return;
+            int tempAmmount;
+            for (int i = 0; i < Inventory.Count; i++)
+            {
+                if (Inventory[i - 1].sName == Inventory[i].sName)
+                {
+                    if (Inventory[i - 1].noOfItem != Inventory[i].noOfItem)
+                    {
+                        tempAmmount = Inventory[i].maxNoOfItem - Inventory[i].noOfItem;
+                        Inventory[i - 1].noOfItem = Inventory[i - 1].maxNoOfItem;
+                        Inventory[i].noOfItem = tempAmmount;
+                        if (Inventory[i].noOfItem == 0)
+                            Inventory.RemoveAt(i);
+                    }
+                }
+            }
+        }
+
         public Player DrawInventory(string Query, Player p)
         {
+            UpdateInv();
             Console.Clear();
             p.DrawOverWorld(false);
             Console.SetCursorPosition(0, 17);

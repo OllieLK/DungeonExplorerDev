@@ -121,21 +121,16 @@ namespace Program
     public abstract class Room
     {
         public bool interactable;
-
         public List<InventoryItem> FloorItems = new List<InventoryItem>(); // List for floor items.
-
         protected string FilledIn; public string getFilledIn() { return FilledIn;  } public void setFilledIn(string c) { FilledIn = c; }
         protected string C; public string getC() { return C; } public void setC(string c) { C = c;  }
         protected string description;
-
-        public virtual object Interact(Player p) { return null; }
-       
+        public virtual object Interact(Player p) { return null; }      
         public Room(string Description)
         {
             interactable = false;            
             description = Description;
         }
-
         // Getters and setters for description
         public void setDescription(string d)
         {
@@ -250,8 +245,11 @@ namespace Program
             floorsCompleted++;
             if (floorsCompleted == floors.Count)
                 DungeonCompleted();
-            if (exitDung)
+            if (exitDung) {
+                currentFloor--;
+                floorsCompleted--;// So will return to the rest room not to combat
                 return;
+            }
             else
                 DungeonLoop(p);
         }
