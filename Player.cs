@@ -4,6 +4,7 @@ using System.Linq;
 using System.Diagnostics;
 using Spectre.Console;
 using System.Diagnostics.Eventing.Reader;
+using System.Net;
 
 
 namespace Program
@@ -39,7 +40,7 @@ namespace Program
         }
     }
     
-    public class Player : BattleEntity
+    public class Player : Creature
     {
         
         public Map GameMap;
@@ -61,21 +62,39 @@ namespace Program
         }
 
         // Battle related functions for player
-        public override object Battleturn(BattleEntity target)
+        public override object Battleturn(Creature target)
         {
-            string displayString = string.Empty;
-            List<char> ValidInputs = new List<char>();
+            Console.SetCursorPosition(0, 24);
+            string displayString = "Press E to use an item on an enemy on an enemy\n";
+            List<char> ValidInputs = new List<char> { 'e' };
             var FilteredInventory = pInv.GetQueriedList("weapon");
             List<Weapon> Weapons = new List<Weapon>();
             for (int i = 0; i < FilteredInventory.Count; i++)
             {
                 Weapons.Add(FilteredInventory[i] as Weapon);
                 ValidInputs.Add((char)('0' + i + 1));
-                displayString += "(" + (i + 1) + ")" + FilteredInventory[i].sName + "\n";
+                displayString += "(" + (i + 1) + ") " + FilteredInventory[i].sName + "\n";
             }
             AnsiConsole.Render(new Panel(displayString));
-            Weapon SelectedWeapon = Weapons[GameInputs.K(ValidInputs) - '0' - 1];
-            target.Health -= SelectedWeapon.Damage;
+            char choice = GameInputs.K(ValidInputs);
+            if (choice == 'e')
+            {
+                var itemToUse = pInv.GetItemInBattle();
+                if (itemToUse != null)
+                    target = itemToUse.UseInBattle(target);
+                else
+                {
+                    Console.SetCursorPosition(0, 26);
+                    AnsiConsole.Render(new Panel("No Valid Items To Use!\nPress enter to return"));
+                    Console.ReadLine(); 
+                    return target;
+                }
+            }                
+            else
+            {
+                Weapon SelectedWeapon = Weapons[choice - '0' - 1];
+                target.Health -= SelectedWeapon.Damage;
+            }
             return target;
         }
         public override void onDeath()
@@ -284,6 +303,25 @@ namespace Program
         }
         private List<InventoryItem> Inventory = new List<InventoryItem>(); // The list of inventory items the player currently has
         public int GetInventoryCount() { return Inventory.Count;}
+
+        public IBattleUsable GetItemInBattle()
+        {
+            string printString = string.Empty;
+            List<char> valids = new List<char>();
+            var validItems = Inventory.OfType<IBattleUsable>().ToList();
+            if (validItems.Count == 0)
+            {
+                return null;
+            }
+            for (int i = 0; i < validItems.Count; i++) {
+                valids.Add((char)('0' + i + 1));
+                printString += "(" + (i + 1) + ") " + (validItems[i] as InventoryItem).sName;
+            }
+            var chosenItem = validItems[GameInputs.K(valids) - '0' - 1];
+            this.DeleteItem((chosenItem as InventoryItem), false);
+
+            return chosenItem;
+        }
 
         public bool IsItemPresent(InventoryItem item)
         {

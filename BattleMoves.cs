@@ -39,7 +39,7 @@ namespace Program
         public int damage { private set; get; }
 
         protected string name { private set; get; }
-        public virtual BattleEntity doMove(BattleEntity target) { return null;  }
+        public virtual Creature doMove(Creature target) { return null;  }
     }
     class AttackingMove : BattleMove
     {
@@ -59,7 +59,7 @@ namespace Program
     class PoisionDart : AttackingMove
     {
         public PoisionDart() : base() { }     
-        public override BattleEntity doMove(BattleEntity target)
+        public override Creature doMove(Creature target)
         {
             target.BattleEffect.SetEffect("poison", 2);
             target.Health -= 15;
@@ -70,7 +70,7 @@ namespace Program
     }
     class Heal : DefensiveMove
     {
-        public override BattleEntity doMove(BattleEntity target)
+        public override Creature doMove(Creature target)
         {
             target.Health += 15;
             if (target.Health > target.MaxHealth)

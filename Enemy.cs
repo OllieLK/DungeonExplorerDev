@@ -20,6 +20,7 @@ namespace Program
         public string Name { get; private set; }
         public void SetEffect(string effect, int numberOfTurns)
         {
+            TurnsLeft = numberOfTurns;
             Name = effect;
             switch (effect)
             {
@@ -37,8 +38,8 @@ namespace Program
                     break;
             }
         }
-        public delegate BattleEntity StatusDelegate(BattleEntity target);
-        public BattleEntity DoEffect(BattleEntity target)
+        public delegate Creature StatusDelegate(Creature target);
+        public Creature DoEffect(Creature target)
         {
             if (TurnsLeft == 0)
             {
@@ -53,28 +54,28 @@ namespace Program
         }
         private StatusDelegate tick;
 
-        private static BattleEntity NoEffect(BattleEntity target) {
+        private static Creature NoEffect(Creature target) {
             return target;
         }
 
-        private static BattleEntity Poison(BattleEntity target) {
+        private static Creature Poison(Creature target) {
             target.Health -= 10;
             return target;
         }
-        private static BattleEntity Recovery(BattleEntity target)
+        private static Creature Recovery(Creature target)
         {            
             target.Health += 10;
             return target;
         }
 
-        private static BattleEntity Fire(BattleEntity target)
+        private static Creature Fire(Creature target)
         {
             target.Health -= 20;
             return target;
         }
     }
 
-    public abstract class BattleEntity
+    public abstract class Creature
     {
         public void tickBattleEffect()
         {
@@ -102,14 +103,14 @@ namespace Program
             return (red + grey);
         }
 
-        public virtual object Battleturn(BattleEntity target)
+        public virtual object Battleturn(Creature target)
         {
             throw new NotImplementedException();
         }
         
     }
  
-    public class Enemy : BattleEntity
+    public class Enemy : Creature
     {
         public Weapon EnemyWeapon;
         public List<BattleMove> Moves;
@@ -122,7 +123,7 @@ namespace Program
             Health = 50;
             EnemyWeapon = enemyWeapon;
         }
-        public override object Battleturn(BattleEntity player)
+        public override object Battleturn(Creature player)
         {
             Random rnd = new Random();
             int choice = rnd.Next(0, Moves.Count + 1);

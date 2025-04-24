@@ -11,12 +11,12 @@ namespace Program
     {
         private List<InventoryItem> ItemDrops = new List<InventoryItem>();
         private Player Player;
-        private List<BattleEntity> Enemies;
-        public Battle(Player p, List<BattleEntity> e, string firstTurn)
+        private List<Creature> Enemies;
+        public Battle(Player p, List<Creature> e, string firstTurn)
         {
             Player = p;
             Enemies = e;
-            Enemies = new List<BattleEntity>();
+            Enemies = new List<Creature>();
             Enemies.Add(new Enemy("troll", new Weapon("sword", 1, 1, "Sword", 10, 10), new List<BattleMove>()));
             Enemies.Add(new Enemy("Vladdy", new Weapon("Sausage roll", 1, 1, "ASshoe", 20, 10), new List<BattleMove> { new Heal(), new PoisionDart() }));
             battleLoop();
@@ -45,7 +45,7 @@ namespace Program
 
                 char c = drawBattle(true); // Get player target and draw map
                 if (c == 'e')
-                    Player.pInv.DrawInventory("", Player); // Showing inventory in a battle counts as a turn
+                    Player.pInv.DrawInventory("", Player); // Showing inventory in a battle counts as a turn // So need to make draw inv return iBattleUsablel;
                 else
                     Enemies[c - '0' - 1] = (Enemy)Player.Battleturn(Enemies[c - '0' - 1]); // Perform players turn
 
@@ -67,7 +67,7 @@ namespace Program
                 }
 
                 drawBattle(false); // Redraw Battle After the turn;               
-                foreach (BattleEntity e in Enemies)
+                foreach (Creature e in Enemies)
                 {
                     Player = (Player)e.Battleturn(Player); // Perform enemy turns
                 }
@@ -94,7 +94,7 @@ namespace Program
             playerhealth += Player.name + " " + Player.UpdateHealthString() + " " + Player.BattleEffect.Name;
             if (playernext)
             {
-                tab.Title = new TableTitle("Select Target, or press e to open inventory. this will use a turn!");
+                tab.Title = new TableTitle("Select Target, or press e to use an item on yourself. this will use a turn!");
                 for (int i = 0; i < Enemies.Count; i++)
                 {
                     ValidTargets.Add((char)('0' + i + 1));
@@ -104,7 +104,7 @@ namespace Program
             else
             {
                 tab.Title = new TableTitle("Ai Turn");
-                foreach (BattleEntity e in Enemies)
+                foreach (Creature e in Enemies)
                     enemystring = e.name + " " + e.UpdateHealthString() + "\n";
             }
 

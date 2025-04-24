@@ -42,6 +42,7 @@ namespace Program
             Battle b;
             public override bool DoFLoor(Player p, int f)
             {
+            Console.SetCursorPosition(0, 23);
                 AnsiConsole.Render(new Panel("Battle up ahead. Press enter to start."));
                 Console.ReadLine();
                 b = new Battle(p, null, "p");

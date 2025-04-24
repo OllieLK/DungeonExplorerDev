@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -13,12 +14,14 @@ namespace Program
     /// </summary>
     /// 
 
-    interface iSellable
+    public interface IBattleUsable
     {
-        
+        Creature UseInBattle(Creature Target);
     }
 
-    public abstract class InventoryItem : iSellable
+
+
+    public abstract class InventoryItem
     {
         
         public int SalePrice;
@@ -90,6 +93,37 @@ namespace Program
             return p;
         }       
     }
+
+    public class AttackingPotion : InventoryItem, IBattleUsable
+    {
+        public int numberofTurns { private set; get; }
+        public int damage { private set; get; }
+        public string battleEffect { private set; get; }
+        public AttackingPotion(string name, int _damage)
+        {
+            sName = name;
+            damage = _damage;
+            battleEffect = "none";
+        }
+        public AttackingPotion(string name, string _effect, int _damage, int numberOfTurns)
+        {
+            sName = name;
+            damage = _damage;
+            battleEffect = _effect;
+            numberofTurns = numberOfTurns;
+        }
+        public Creature UseInBattle(Creature Target)
+        {
+            Target.BattleEffect.SetEffect(battleEffect, numberofTurns);
+            Target.Health -= damage;
+            return Target;
+        }
+        public override string ToString()
+        {
+            return sName;
+        }
+    }
+
     public class Weapon : InventoryItem
     {
         public int Damage;

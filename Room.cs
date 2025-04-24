@@ -236,7 +236,7 @@ namespace Program
         private void DungeonCompleted()
         {
             interactable = false;
-            C = "[green]D[/]";
+            FilledIn = "[green]D[/]";
         }
         private void DungeonLoop(Player p)
         {
