@@ -43,11 +43,6 @@ namespace Program
            Console.ReadLine();
         }
         
-        public void Update()
-        {
-            P1.GameMap.UpdateArray();
-        }
-
         void gameLoop()
         {
             do { 

@@ -339,20 +339,26 @@ namespace Program
         // Checks for duplicate items and stacks them neatly
         private void UpdateInv()
         {
-            if (Inventory.Count == 1)
+            if (Inventory.Count <= 1)
                 return;
-            int tempAmmount;
-            for (int i = 0; i < Inventory.Count; i++)
+            for (int i = 0; i < Inventory.Count - 1; i++)
             {
-                if (Inventory[i - 1].sName == Inventory[i].sName)
+                for (int j = i + 1; j < Inventory.Count; j++)
                 {
-                    if (Inventory[i - 1].noOfItem != Inventory[i].noOfItem)
+                    if (Inventory[i].sName == Inventory[j].sName)
                     {
-                        tempAmmount = Inventory[i].maxNoOfItem - Inventory[i].noOfItem;
-                        Inventory[i - 1].noOfItem = Inventory[i - 1].maxNoOfItem;
-                        Inventory[i].noOfItem = tempAmmount;
-                        if (Inventory[i].noOfItem == 0)
-                            Inventory.RemoveAt(i);
+                        int spaceLeft = Inventory[i].maxNoOfItem - Inventory[i].noOfItem;
+                        if (spaceLeft > 0)
+                        {
+                            int amountToMove = Math.Min(spaceLeft, Inventory[j].noOfItem);
+                            Inventory[i].noOfItem += amountToMove;
+                            Inventory[j].noOfItem -= amountToMove;
+                            if (Inventory[j].noOfItem == 0)
+                            {
+                                Inventory.RemoveAt(j);
+                                j--; // stay on same index since list just shifted
+                            }
+                        }
                     }
                 }
             }

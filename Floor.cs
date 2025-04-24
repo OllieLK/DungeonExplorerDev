@@ -37,13 +37,14 @@ namespace Program
             
             public BattleFloor(Dungeon d) : base(d)
             {
-
+                
             }
             Battle b;
             public override bool DoFLoor(Player p, int f)
             {
+                AnsiConsole.Render(new Panel("Battle up ahead. Press enter to start."));
+                Console.ReadLine();
                 b = new Battle(p, null, "p");
-
                 return true;
             }
         }
