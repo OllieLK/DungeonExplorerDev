@@ -15,13 +15,8 @@ namespace Program
             p = new SoundPlayer("Final Fantasy VII - Prelude (Original Soundtrack).wav");
             //p.PlayLooping();
             Console.CursorVisible = false;
-            
-           
-            
             GameInstance = new Game();
-            GameInstance.titleScreen();
-
-            
+            GameInstance.titleScreen();           
         }
     }
 }
