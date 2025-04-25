@@ -34,18 +34,17 @@ namespace Program
     }
         public class BattleFloor : Floor
         {
-            
-            public BattleFloor(Dungeon d) : base(d)
-            {
-                
-            }
             Battle b;
+            public BattleFloor(Dungeon d, Battle _battle) : base(d)
+            {
+                b = _battle;
+            }
             public override bool DoFLoor(Player p, int f)
             {
-            Console.SetCursorPosition(0, 23);
+                Console.SetCursorPosition(0, 23);
                 AnsiConsole.Render(new Panel("Battle up ahead. Press enter to start."));
                 Console.ReadLine();
-                b = new Battle(p, null, "p");
+                b.startBattle(p);
                 return true;
             }
         }

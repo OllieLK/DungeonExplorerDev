@@ -33,7 +33,7 @@ namespace Program
             a = new string[sizeX, sizeY];
             Arr = new Room[sizeX, sizeY];
             List<Floor> floorList = new List<Floor>();
-            //floorList.Add(new Floor());
+            
             
                 
             // Shops
@@ -42,7 +42,21 @@ namespace Program
             Arr[7, 12] = new Shop("Nabooru's Nook", InventoryItem.GetRandomItem(rnd.Next(3)));
             Arr[8, 18] = new Shop("Rauru's Retail", InventoryItem.GetRandomItem(rnd.Next(3)));
             // Dungeons
-            Arr[0, 15] = new Dungeon("Forest Temple", floorList);
+            Arr[0, 15] = new Dungeon("Forest Temple", null);
+            (Arr[0, 15] as Dungeon).setFLoor(new List<Floor>
+            {
+                new RestFloor(Arr[0, 15] as Dungeon),
+                new ChestFloor(new Food("Seared steak", 3, "Finest steak in hyrule", 20), Arr[0, 15] as Dungeon),
+                new BattleFloor(Arr[0, 15] as Dungeon, new Battle(new List<Creature>
+                {
+                    new Enemy("Giant bee", new Weapon("Stinger", "", 15), new List<BattleMove>
+                    {
+                        new AttackingMove("Poison string", 15, "posion", 3),
+                        new DefensiveMove("Regeneration!", 30)
+                    }),
+                })),
+                new ChestFloor(new Weapon("Bee Stinger", "A bee stinger mounted on a stick. sharp, but basic", 20), Arr[0,15] as Dungeon),
+            });
             Arr[2, 5] = new Dungeon("Fire Temple", floorList);
             Arr[3, 10] = new Dungeon("Water Temple", floorList);
             Arr[5, 4] = new Dungeon("Shadow Temple", floorList);
@@ -214,18 +228,16 @@ namespace Program
         int floorsCompleted;
         int currentFloor;
         List<Floor> floors;
-        public int numOfFloors { get; }
+        public int numOfFloors { get; private set; }
 
+        public void setFLoor(List<Floor> f)
+        {
+            floors = f;
+            numOfFloors = floors.Count;
+        }
 
         public Dungeon(string description, List<Floor> _floors) : base(description)
         {
-            floors = new List<Floor>
-            {
-                new ChestFloor(InventoryItem.GetRandomItem(), this),
-                new RestFloor(this),
-                new BattleFloor(this)
-            };
-            numOfFloors = floors.Count;
             interactable = true;
             C ="?";
             FilledIn = "[red]D[/]";

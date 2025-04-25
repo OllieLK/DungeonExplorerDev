@@ -127,19 +127,19 @@ namespace Program
         {
             Random rnd = new Random();
             int choice = rnd.Next(0, Moves.Count + 1);
-            Console.WriteLine(name + "'s Move:");
+            Console.Write(name + "'s Move: ");
 
             if (choice == Moves.Count) // Basic attack
             {
                 player.Health -= EnemyWeapon.Damage;
-                AnsiConsole.Render(new Panel("Used their " + this.EnemyWeapon.sName + ". It dealt " + this.EnemyWeapon.Damage + " Damage.\nPress Enter to continue"));
+                Console.Write("Used their " + this.EnemyWeapon.sName + ". It dealt " + this.EnemyWeapon.Damage + " Damage. Press Enter to continue");
                 Console.ReadLine();         
             }
             else
             {
                 if (BattleEffect.Name != "none" || Health <= (MaxHealth / 3))
                 {// AI will use restoritive move if low health or has status effect.
-                    var defensiveMoves = Moves.Where(move => move.type == "defensive").ToList(); // Filter for only defensive moves
+                    var defensiveMoves = Moves.Where(move => move.type == moveType.defend).ToList(); // Filter for only defensive moves
                     if (defensiveMoves.Count > 0)
                     {
                         Enemy e = new Enemy(this.name, this.EnemyWeapon, this.Moves);
@@ -150,8 +150,8 @@ namespace Program
                 }
                 else
                 {
-                    var defensiveMoves = Moves.Where(move => move.type == "attack").ToList(); // Filter only attacking moves
-                    player = Moves[choice].doMove(player); // attack player
+                    var attackingMoves = Moves.Where(move => move.type == moveType.attack).ToList(); // Filter only attacking moves
+                    player = attackingMoves[rnd.Next(attackingMoves.Count - 1)].doMove(player); // attack player
                 }
             }
             return player;

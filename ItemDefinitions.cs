@@ -67,8 +67,7 @@ namespace Program
         }
         public InventoryItem() { }
         public InventoryItem(string name, int maxNoOfItem, int noOfItem, string desc, int price)
-        {
-            
+        {           
             SalePrice = price;
             sDescription = desc;
             this.sName = name;
@@ -79,7 +78,33 @@ namespace Program
 
     public class Food : InventoryItem
     {
+        string effectToClear;
         int Recovery;
+        public Food(string name, int maxnoOfItem, string desc, int recovery)
+        {
+            noOfItem = maxnoOfItem;
+            type = "food";
+            sName = name;
+            sDescription = desc;
+            maxNoOfItem = maxnoOfItem;
+            Recovery = recovery;
+        }
+        public Food(string name, int maxnoOfItem, string desc, int recovery, string effect)
+        {
+            noOfItem = maxnoOfItem;
+            type = "food";
+            sName = name;
+            sDescription = desc;
+            maxNoOfItem = maxnoOfItem;
+            Recovery = recovery;
+            effectToClear = effect;
+        }
+        public Food(string name, int maxNoOfItem, int noOfItem, string desc, int price, int recovery, string effect) : base(name, maxNoOfItem, noOfItem, desc, price)
+        {
+            effectToClear = effect;
+            type = "food";
+            Recovery = recovery;
+        }
         public Food(string name, int maxNoOfItem, int noOfItem, string desc, int price, int recovery) : base( name, maxNoOfItem, noOfItem, desc, price)
         {
             type = "food";
@@ -87,6 +112,9 @@ namespace Program
         }
         public override Player Use(Player p)
         {
+            if (effectToClear != "none")
+                if (p.BattleEffect.Name == effectToClear)
+                    p.BattleEffect.SetEffect("none", 1);
             p.Health = p.Health + Recovery;
             if (p.Health > p.MaxHealth)
                 p.Health = p.MaxHealth;
@@ -94,19 +122,21 @@ namespace Program
         }       
     }
 
-    public class AttackingPotion : InventoryItem, IBattleUsable
+    public class AttackingItem : InventoryItem, IBattleUsable
     {
         public int numberofTurns { private set; get; }
         public int damage { private set; get; }
         public string battleEffect { private set; get; }
-        public AttackingPotion(string name, int _damage)
+        public AttackingItem(string name, int _damage)
         {
+            type = "battle";
             sName = name;
             damage = _damage;
             battleEffect = "none";
         }
-        public AttackingPotion(string name, string _effect, int _damage, int numberOfTurns)
+        public AttackingItem(string name, string _effect, int _damage, int numberOfTurns)
         {
+            type = "battle";
             sName = name;
             damage = _damage;
             battleEffect = _effect;
@@ -114,19 +144,25 @@ namespace Program
         }
         public Creature UseInBattle(Creature Target)
         {
+            Console.WriteLine("Used " + sName + ".\npress enter");
             Target.BattleEffect.SetEffect(battleEffect, numberofTurns);
             Target.Health -= damage;
             return Target;
-        }
-        public override string ToString()
-        {
-            return sName;
-        }
+        }        
     }
+
+    
 
     public class Weapon : InventoryItem
     {
         public int Damage;
+        public Weapon(string name, string desc, int damage)
+        {
+            sName = name;
+            Damage = damage;
+            sDescription = desc;
+            type = "weapon";
+        }
         public Weapon(string name, int maxNoOfItem, int noOfItem, string desc, int price, int damage) : base(name, maxNoOfItem, noOfItem, desc, price)
         {
             type = "weapon";

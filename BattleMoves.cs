@@ -9,77 +9,80 @@ using System.Threading.Tasks;
 
 namespace Program
 {
+    public enum moveType
+    {
+        attack,
+        defend
+    }
+
     public abstract class BattleMove
     {
-        public static List<BattleMove> BattleMoves;
-        public static List<BattleMove> getMoves(int noOfMoves)
-        {
-            try // Try catch block for getting battle moves. if it fails (Not yet assigned) assigns them and then recalls function
-            {
-                Random rnd = new Random();
-                var items = new List<BattleMove>();
-                for (int i = 0; i < noOfMoves; i++)
-                    items.Add(BattleMoves[rnd.Next(BattleMoves.Count)]);
-
-                return items;
-            }
-            catch
-            {
-                BattleMoves = new List<BattleMove>
-                {
-                    new PoisionDart(),
-                    new Heal()
-                };
-                getMoves(noOfMoves);
-            }
-            return null;
-        }
-        public string type;
+        public moveType type { protected set; get; }
+        public int healthChange { protected set; get; }
+        public string effect { protected set; get; }
+        protected string name { set; get; }
+        public abstract Creature doMove(Creature target);
         
-        public int damage { private set; get; }
 
-        protected string name { private set; get; }
-        public virtual Creature doMove(Creature target) { return null;  }
+        public BattleMove(string _name, int _healthChange) {
+            name = _name;
+            healthChange = _healthChange;
+        }
     }
     class AttackingMove : BattleMove
     {
-        public AttackingMove()
+        private int TurnsLasting;
+        public AttackingMove(string _name, int _healthChange, string _effect, int _turnsLasting) : base(_name, _healthChange)
         {
-            type = "attack";
+            TurnsLasting = _turnsLasting;
+            effect = _effect;
+            type = moveType.attack;
+        }
+        
+        public AttackingMove(string _name, int _healthChange) : base(_name, _healthChange)
+        {
+            type = moveType.attack;
+            effect = "none";
+        }
+        public override Creature doMove(Creature target) {
+            Console.Write(name + " Damages " + healthChange + " Health. ");
+            if (effect != "none")
+                Console.Write("Also inflicts " + effect + "\n");
+            Console.WriteLine("Press enter to continue");
+            Console.ReadLine();
+
+            target.Health -= healthChange;
+            target.BattleEffect.SetEffect(effect, TurnsLasting);
+            return target;
         }
     }
     class DefensiveMove : BattleMove
     {
-        public DefensiveMove()
+        private string effecttoClear;
+        public DefensiveMove(string _name, int _healthChange) : base(_name, _healthChange)
         {
-            type = "defensive";
+            type = moveType.defend;
+            effecttoClear = "none";
+        }
+        public DefensiveMove(string _name, int _healthChange, string _effectToClear) : base(_name, _healthChange)
+        {
+            type = moveType.defend;
+            effecttoClear = _effectToClear;
+        }
+        public override Creature doMove(Creature target)
+        {
+            Console.Write(name + " Recovers " + healthChange + " Health. ");
+            if (effecttoClear != "none")
+                Console.Write("Also recovered from " + effecttoClear + "\n");
+            Console.WriteLine("Press enter to continue");
+            Console.ReadLine();
+            target.BattleEffect.SetEffect(effecttoClear, 1);
+            target.Health += healthChange;
+            return target;
         }
     }
 
-    class PoisionDart : AttackingMove
-    {
-        public PoisionDart() : base() { }     
-        public override Creature doMove(Creature target)
-        {
-            target.BattleEffect.SetEffect("poison", 2);
-            target.Health -= 15;
-            AnsiConsole.Render(new Panel("Hit with poison dart. Dealt 15 damage. will deal 10 per turn\nPress enter to continue"));
-            Console.ReadLine();
-            return target;
-        }
-    }
-    class Heal : DefensiveMove
-    {
-        public override Creature doMove(Creature target)
-        {
-            target.Health += 15;
-            if (target.Health > target.MaxHealth)
-                target.Health = target.MaxHealth;
-            AnsiConsole.Render(new Panel("Healed 15 HP!\nPressEnter To Continue!"));
-            Console.ReadLine();
-            return target;
-        }
-    }
+
 
 
 

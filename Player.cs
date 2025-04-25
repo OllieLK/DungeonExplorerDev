@@ -99,7 +99,10 @@ namespace Program
         }
         public override void onDeath()
         {
-            throw new NotImplementedException();
+            Console.Clear();
+            AnsiConsole.Render(new Panel("YOU HAVE DIED.\nPRESS ENTER TO RETURN TO TITLE SCREEN"));
+            Console.ReadLine();
+            DungeonExplorer.Main(null);
         }
 
         public Player()
@@ -317,6 +320,7 @@ namespace Program
                 valids.Add((char)('0' + i + 1));
                 printString += "(" + (i + 1) + ") " + (validItems[i] as InventoryItem).sName;
             }
+            AnsiConsole.Render(new Panel(printString));
             var chosenItem = validItems[GameInputs.K(valids) - '0' - 1];
             this.DeleteItem((chosenItem as InventoryItem), false);
 

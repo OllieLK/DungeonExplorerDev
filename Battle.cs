@@ -12,19 +12,15 @@ namespace Program
         private List<InventoryItem> ItemDrops = new List<InventoryItem>();
         private Player Player;
         private List<Creature> Enemies;
-        public Battle(Player p, List<Creature> e, string firstTurn)
+        public Battle(List<Creature> e)
+        {
+            
+            Enemies = e;                     
+        }
+        public void startBattle(Player p)
         {
             Player = p;
-            Enemies = e;
-            Enemies = new List<Creature>();
-            Enemies.Add(new Enemy("troll", new Weapon("sword", 1, 1, "Sword", 10, 10), new List<BattleMove>()));
-            Enemies.Add(new Enemy("Vladdy", new Weapon("Sausage roll", 1, 1, "ASshoe", 20, 10), new List<BattleMove> { new Heal(), new PoisionDart() }));
             battleLoop();
-        }
-        public List<InventoryItem> startBattle()
-        {
-            battleLoop();
-            return ItemDrops;
         }
         private void battleLoop()
         {            
@@ -120,8 +116,9 @@ namespace Program
         }
         private void BattleWon()
         {
-            Console.WriteLine("You killed the pigeondemon");
-            Console.ReadLine();
+            Console.Clear();
+            Player.DrawOverWorld(false);
+            AnsiConsole.Render(new Panel("Battle Won!\nPress Enter to return home."));
         }
     }
 }
