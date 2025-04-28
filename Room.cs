@@ -3,6 +3,7 @@ using Spectre.Console;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace Program
 {
@@ -18,8 +19,27 @@ namespace Program
     ///     Class for an individual room in the map, has descriptions and characters to display on the map, aswell 
     ///     as floor items to be picked up by the player
     /// </summary>
+    
+    public enum DungeonDif
+    {      
+        EASY,
+        MEDIUM,
+        HARD
+    }
+
     public class Map
     {
+        public void openHyruleCastle()
+        {
+            foreach (Room R in Arr)
+                if (R.GetType() == typeof(HyruleCastle))
+                    R.interactable = true;
+        }
+
+        public const int Easies = 3;
+        public const int Mediums = 4;
+        public const int Hards = 3;
+
         public string[,] a;
         int sizeX = 10, sizeY = 20;
         private Room[,] Arr; public Room getRoomFromArr(int x, int y) { return Arr[x, y]; }
@@ -27,6 +47,12 @@ namespace Program
         // Initializes each room in the map array with a default character and description
         // Also sets some items in one of the rooms, and gives the 4 bordering rooms a description so that the player can move to them
         // and see the description
+        public void UpdateShops() {
+            foreach(Room r in Arr)
+                if (r.GetType() == typeof(Shop))
+                    (r as Shop).UpdateItems();
+        }
+
         public Map(int startingposX, int startingposY)
         {
             Random rnd = new Random();
@@ -42,7 +68,7 @@ namespace Program
             Arr[7, 12] = new Shop("Nabooru's Nook", InventoryItem.GetRandomItem(rnd.Next(3)));
             Arr[8, 18] = new Shop("Rauru's Retail", InventoryItem.GetRandomItem(rnd.Next(3)));
             // Dungeons
-            Arr[0, 15] = new Dungeon("Forest Temple", null);
+            Arr[0, 15] = new Dungeon("Forest Temple", null, DungeonDif.EASY);
             (Arr[0, 15] as Dungeon).setFLoor(new List<Floor>
             {
                 new RestFloor(Arr[0, 15] as Dungeon),
@@ -57,15 +83,44 @@ namespace Program
                 })),
                 new ChestFloor(new Weapon("Bee Stinger", "A bee stinger mounted on a stick. sharp, but basic", 20), Arr[0,15] as Dungeon),
             });
-            Arr[2, 5] = new Dungeon("Fire Temple", floorList);
-            Arr[3, 10] = new Dungeon("Water Temple", floorList);
-            Arr[5, 4] = new Dungeon("Shadow Temple", floorList);
-            Arr[5, 15] = new Dungeon("Spirit Temple", floorList);
-            Arr[6, 2] = new Dungeon("Ice Cavern", floorList);
-            Arr[6, 10] = new Dungeon("Stone Tower", floorList);
-            Arr[7, 5] = new Dungeon("Skyward Sword Temple", floorList);
-            Arr[8, 8] = new Dungeon("Dark Link's Lair", floorList);
-            Arr[9, 14] = new Dungeon("Temple of Time", floorList);
+            Arr[2, 5] = new Dungeon("Fire Temple", floorList, DungeonDif.EASY);
+            (Arr[2, 5] as Dungeon).setFLoor(new List<Floor>
+            {
+                new RestFloor(Arr[2 , 5] as Dungeon),
+                new ChestFloor(new Food("Salty Fish", 5, "Fish from the akalan ocean", 15), Arr[2, 5] as Dungeon),
+                new BattleFloor(Arr[2 , 5] as Dungeon, new Battle(new List<Creature>
+                {
+                    new Enemy("Bokoblin", new Weapon("Horn smash", "", 20), new List<BattleMove>
+                    {
+                        new AttackingMove("Poison potion!", 15, "posion", 3),
+                        new DefensiveMove("Regeneration!", 30)
+                    }),
+                })),
+                new ChestFloor(new Weapon("Bokoblin Horn", "Would make a good weapon", 20), Arr[2 , 5] as Dungeon),
+            });
+            Arr[3, 10] = new Dungeon("Water Temple", floorList, DungeonDif.EASY);
+            
+            Arr[5, 4] = new Dungeon("Shadow Temple", floorList, DungeonDif.MEDIUM);
+            (Arr[0, 15] as Dungeon).setFLoor(new List<Floor>
+            {
+                new RestFloor(Arr[0, 15] as Dungeon),
+                new ChestFloor(new Food("Seared steak", 3, "Finest steak in hyrule", 20), Arr[0, 15] as Dungeon),
+                new BattleFloor(Arr[0, 15] as Dungeon, new Battle(new List<Creature>
+                {
+                    new Enemy("Giant bee", new Weapon("Stinger", "", 15), new List<BattleMove>
+                    {
+                        new AttackingMove("Poison string", 15, "posion", 3),
+                        new DefensiveMove("Regeneration!", 30)
+                    }),
+                })),
+                new ChestFloor(new Weapon("Bee Stinger", "A bee stinger mounted on a stick. sharp, but basic", 20), Arr[0,15] as Dungeon),
+            });
+            Arr[5, 15] = new Dungeon("Spirit Temple", floorList, DungeonDif.MEDIUM);
+            Arr[6, 2] = new Dungeon("Ice Cavern", floorList, DungeonDif.MEDIUM);
+            Arr[6, 10] = new Dungeon("Stone Tower", floorList, DungeonDif.MEDIUM);
+            Arr[7, 5] = new Dungeon("Skyward Sword Temple", floorList, DungeonDif.HARD);
+            Arr[8, 8] = new Dungeon("Dark Link's Lair", floorList, DungeonDif.HARD);
+            Arr[9, 14] = new Dungeon("Temple of Time", floorList, DungeonDif.HARD);
 
             // NPC Rooms
             Arr[0, 5] = new NPCroom("Old Man");
@@ -134,6 +189,7 @@ namespace Program
 
     public abstract class Room
     {
+        
         public bool interactable;
         public List<InventoryItem> FloorItems = new List<InventoryItem>(); // List for floor items.
         protected string FilledIn; public string getFilledIn() { return FilledIn;  } public void setFilledIn(string c) { FilledIn = c; }
@@ -167,6 +223,11 @@ namespace Program
 
     public class Shop : Room
     {
+        public void UpdateItems()
+        {
+            Random rnd = new Random();
+            itemsForSale = InventoryItem.GetRandomItem(rnd.Next(5));
+        }
         public Shop(string description, List<InventoryItem> _saleItems) : base(description) { 
             interactable = true;
             itemsForSale = _saleItems;
@@ -176,6 +237,10 @@ namespace Program
         List<InventoryItem> itemsForSale;
         public override object Interact(Player p)
         {
+            // 7856 378395
+
+
+
             Console.SetCursorPosition(0, 17);
             List<char> valids = new List<char> { 'q' };
 
@@ -223,8 +288,21 @@ namespace Program
         }
     }
 
+    public class HyruleCastle : Room
+    {
+        public HyruleCastle(string Description) : base(Description)
+        {
+        }
+
+        public override object Interact(Player p)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     public class Dungeon : Room
     {
+        public DungeonDif Difficulty;
         int floorsCompleted;
         int currentFloor;
         List<Floor> floors;
@@ -236,10 +314,11 @@ namespace Program
             numOfFloors = floors.Count;
         }
 
-        public Dungeon(string description, List<Floor> _floors) : base(description)
+        public Dungeon(string description, List<Floor> _floors, DungeonDif _difficulty) : base(description)
         {
+            this.Difficulty = _difficulty;
             interactable = true;
-            C ="?";
+            C = "?";
             FilledIn = "[red]D[/]";
             //floors = _floors;
             floorsCompleted = 0;

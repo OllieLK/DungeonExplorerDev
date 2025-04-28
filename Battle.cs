@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
 namespace Program
 {
     public class Battle
@@ -13,8 +14,7 @@ namespace Program
         private Player Player;
         private List<Creature> Enemies;
         public Battle(List<Creature> e)
-        {
-            
+        {            
             Enemies = e;                     
         }
         public void startBattle(Player p)
@@ -118,7 +118,7 @@ namespace Program
         {
             Console.Clear();
             Player.DrawOverWorld(false);
-            AnsiConsole.Render(new Panel("Battle Won!\nPress Enter to return home."));
+            AnsiConsole.Render(new Panel("Battle Won!\nPress Enter to return."));
         }
     }
 }

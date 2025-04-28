@@ -42,7 +42,8 @@ namespace Program
     
     public class Player : Creature
     {
-        
+        public int TriForce;
+        public bool TriForceFinish = false;
         public Map GameMap;
         public int numberOfCoins;
         public Room CurrentRoom; // Current room player is in
@@ -125,11 +126,22 @@ namespace Program
             ActionMenuFunctions.Add(new ActionMenuAction(ScoutForItems, "Scout Around For Items"));
         }
 
-
+        public void TriForceFinished()
+        {
+            AnsiConsole.Clear();
+            DrawOverWorld(false);
+            AnsiConsole.Render(new Panel("You have collected all the pieces of the triforce! Go to Hyrule castle and fight ganon!\nPress enter"));
+            Console.ReadLine();
+            TriForceFinish = true;
+            GameMap.openHyruleCastle();
+        }
         
 
         public void OverWorldTurnMenu()
         {
+            if (TriForce == 8)
+
+            GameMap.UpdateShops();
             DrawOverWorld(true);
             List<char> Valids = new List<char> { 'w', 'a', 's', 'd', 'e', 'q' };
             if (CurrentRoom.interactable == true)            

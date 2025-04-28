@@ -143,7 +143,7 @@ namespace Program
                     if (defensiveMoves.Count > 0)
                     {
                         Enemy e = new Enemy(this.name, this.EnemyWeapon, this.Moves);
-                        e = Moves[rnd.Next(defensiveMoves.Count - 1)].doMove(this) as Enemy;
+                        e = defensiveMoves[rnd.Next(defensiveMoves.Count - 1)].doMove(this) as Enemy;
                         this.Health = e.Health;
                         this.BattleEffect = e.BattleEffect; // Makes new instance and wraps back to current instance if move is defensive.
                     }
@@ -158,7 +158,8 @@ namespace Program
         }
         public override void onDeath()
         {
-            return;
+            AnsiConsole.Render(new Panel(name + " has been defeated"));
+            System.Threading.Thread.Sleep(300);
         }        
     }
 
