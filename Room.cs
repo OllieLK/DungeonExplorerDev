@@ -3,6 +3,7 @@ using Spectre.Console;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 
 namespace Program
@@ -59,7 +60,9 @@ namespace Program
             a = new string[sizeX, sizeY];
             Arr = new Room[sizeX, sizeY];
             List<Floor> floorList = new List<Floor>();
-            
+
+
+            Arr[5, 17] = new HyruleCastle();
             
                 
             // Shops
@@ -68,66 +71,129 @@ namespace Program
             Arr[7, 12] = new Shop("Nabooru's Nook", InventoryItem.GetRandomItem(rnd.Next(3)));
             Arr[8, 18] = new Shop("Rauru's Retail", InventoryItem.GetRandomItem(rnd.Next(3)));
             // Dungeons
+            // Forest Temple (EASY) - 4 rooms
             Arr[0, 15] = new Dungeon("Forest Temple", null, DungeonDif.EASY);
-            (Arr[0, 15] as Dungeon).setFLoor(new List<Floor>
+            (Arr[0, 15] as Dungeon).setFloor(new List<Floor>
             {
                 new RestFloor(Arr[0, 15] as Dungeon),
-                new ChestFloor(new Food("Seared steak", 3, "Finest steak in hyrule", 20), Arr[0, 15] as Dungeon),
-                new BattleFloor(Arr[0, 15] as Dungeon, new Battle(new List<Creature>
-                {
-                    new Enemy("Giant bee", new Weapon("Stinger", "", 15), new List<BattleMove>
-                    {
-                        new AttackingMove("Poison string", 15, "posion", 3),
-                        new DefensiveMove("Regeneration!", 30)
-                    }),
-                })),
-                new ChestFloor(new Weapon("Bee Stinger", "A bee stinger mounted on a stick. sharp, but basic", 20), Arr[0,15] as Dungeon),
+                new ChestFloor(new Food("Seared steak", 3, "Finest steak in Hyrule", 20), Arr[0, 15] as Dungeon),
+                new BattleFloor(Arr[0, 15] as Dungeon, new Battle(Enemy.getEnemies(2, DungeonDif.EASY))),
+                new ChestFloor(new Weapon("Bee Stinger", "A bee stinger mounted on a stick. Sharp, but basic", 20), Arr[0, 15] as Dungeon),
             });
-            Arr[2, 5] = new Dungeon("Fire Temple", floorList, DungeonDif.EASY);
-            (Arr[2, 5] as Dungeon).setFLoor(new List<Floor>
+
+            // Fire Temple (EASY) - 4 rooms
+            Arr[2, 5] = new Dungeon("Fire Temple", null, DungeonDif.EASY);
+            (Arr[2, 5] as Dungeon).setFloor(new List<Floor>
             {
-                new RestFloor(Arr[2 , 5] as Dungeon),
-                new ChestFloor(new Food("Salty Fish", 5, "Fish from the akalan ocean", 15), Arr[2, 5] as Dungeon),
-                new BattleFloor(Arr[2 , 5] as Dungeon, new Battle(new List<Creature>
-                {
-                    new Enemy("Bokoblin", new Weapon("Horn smash", "", 20), new List<BattleMove>
-                    {
-                        new AttackingMove("Poison potion!", 15, "posion", 3),
-                        new DefensiveMove("Regeneration!", 30)
-                    }),
-                })),
-                new ChestFloor(new Weapon("Bokoblin Horn", "Would make a good weapon", 20), Arr[2 , 5] as Dungeon),
+                new RestFloor(Arr[2, 5] as Dungeon),
+                new ChestFloor(new Food("Mystic Herb", 2, "A magical herb that restores health", 30), Arr[2, 5] as Dungeon),
+                new BattleFloor(Arr[2, 5] as Dungeon, new Battle(Enemy.getEnemies(3, DungeonDif.EASY))),
+                new ChestFloor(new Weapon("Fire Sword", "A sword imbued with the power of fire", 25), Arr[2, 5] as Dungeon),
             });
-            Arr[3, 10] = new Dungeon("Water Temple", floorList, DungeonDif.EASY);
-            
-            Arr[5, 4] = new Dungeon("Shadow Temple", floorList, DungeonDif.MEDIUM);
-            (Arr[0, 15] as Dungeon).setFLoor(new List<Floor>
+
+            // Water Temple (EASY) - 4 rooms
+            Arr[3, 10] = new Dungeon("Water Temple", null, DungeonDif.EASY);
+            (Arr[3, 10] as Dungeon).setFloor(new List<Floor>
             {
-                new RestFloor(Arr[0, 15] as Dungeon),
-                new ChestFloor(new Food("Seared steak", 3, "Finest steak in hyrule", 20), Arr[0, 15] as Dungeon),
-                new BattleFloor(Arr[0, 15] as Dungeon, new Battle(new List<Creature>
-                {
-                    new Enemy("Giant bee", new Weapon("Stinger", "", 15), new List<BattleMove>
-                    {
-                        new AttackingMove("Poison string", 15, "posion", 3),
-                        new DefensiveMove("Regeneration!", 30)
-                    }),
-                })),
-                new ChestFloor(new Weapon("Bee Stinger", "A bee stinger mounted on a stick. sharp, but basic", 20), Arr[0,15] as Dungeon),
+                new RestFloor(Arr[3, 10] as Dungeon),
+                new ChestFloor(new Food("Watermelon", 5, "Fresh and hydrating", 15), Arr[3, 10] as Dungeon),
+                new BattleFloor(Arr[3, 10] as Dungeon, new Battle(Enemy.getEnemies(3, DungeonDif.EASY))),
+                new ChestFloor(new Weapon("Water Staff", "A staff that controls water currents", 18), Arr[3, 10] as Dungeon),
             });
-            Arr[5, 15] = new Dungeon("Spirit Temple", floorList, DungeonDif.MEDIUM);
-            Arr[6, 2] = new Dungeon("Ice Cavern", floorList, DungeonDif.MEDIUM);
-            Arr[6, 10] = new Dungeon("Stone Tower", floorList, DungeonDif.MEDIUM);
-            Arr[7, 5] = new Dungeon("Skyward Sword Temple", floorList, DungeonDif.HARD);
-            Arr[8, 8] = new Dungeon("Dark Link's Lair", floorList, DungeonDif.HARD);
-            Arr[9, 14] = new Dungeon("Temple of Time", floorList, DungeonDif.HARD);
+
+            // Shadow Temple (MEDIUM) - 5 rooms
+            Arr[5, 4] = new Dungeon("Shadow Temple", null, DungeonDif.MEDIUM);
+            (Arr[5, 4] as Dungeon).setFloor(new List<Floor>
+            {
+                new RestFloor(Arr[5, 4] as Dungeon),
+                new ChestFloor(new Food("Shadow Soup", 4, "A dark dish that boosts your stealth", 25), Arr[5, 4] as Dungeon),
+                new BattleFloor(Arr[5, 4] as Dungeon, new Battle(Enemy.getEnemies(3, DungeonDif.MEDIUM))),
+                new ChestFloor(new Weapon("Shadow Blade", "A cursed sword that deals heavy damage", 30), Arr[5, 4] as Dungeon),
+                new ChestFloor(new Food("Dark Elixir", 1, "An elixir that increases dark magic power", 50), Arr[5, 4] as Dungeon),
+            });
+
+            // Spirit Temple (MEDIUM) - 5 rooms
+            Arr[5, 15] = new Dungeon("Spirit Temple", null, DungeonDif.MEDIUM);
+            (Arr[5, 15] as Dungeon).setFloor(new List<Floor>
+            {
+                new RestFloor(Arr[5, 15] as Dungeon),
+                new ChestFloor(new Food("Spirit Fruit", 2, "A mysterious fruit with ethereal power", 35), Arr[5, 15] as Dungeon),
+                new BattleFloor(Arr[5, 15] as Dungeon, new Battle(Enemy.getEnemies(3, DungeonDif.MEDIUM))),
+                new ChestFloor(new Weapon("Spirit Bow", "A bow that fires arrows of light", 22), Arr[5, 15] as Dungeon),
+                new ChestFloor(new Weapon("Spirit Staff", "A magical staff that channels ethereal power", 25), Arr[5, 15] as Dungeon),
+            });
+
+            // Ice Cavern (MEDIUM) - 5 rooms
+            Arr[6, 2] = new Dungeon("Ice Cavern", null, DungeonDif.MEDIUM);
+            (Arr[6, 2] as Dungeon).setFloor(new List<Floor>
+            {
+                new RestFloor(Arr[6, 2] as Dungeon),
+                new ChestFloor(new Food("Frost Berries", 3, "Berries that chill and heal", 20), Arr[6, 2] as Dungeon),
+                new BattleFloor(Arr[6, 2] as Dungeon, new Battle(Enemy.getEnemies(2, DungeonDif.MEDIUM))),
+                new ChestFloor(new Weapon("Ice Sword", "A sword that freezes enemies on contact", 28), Arr[6, 2] as Dungeon),
+                new ChestFloor(new Food("Iced Nectar", 2, "A chilling nectar that restores health", 30), Arr[6, 2] as Dungeon),
+            });
+
+            // Stone Tower (MEDIUM) - 5 rooms
+            Arr[6, 10] = new Dungeon("Stone Tower", null, DungeonDif.MEDIUM);
+            (Arr[6, 10] as Dungeon).setFloor(new List<Floor>
+            {
+                new RestFloor(Arr[6, 10] as Dungeon),
+                new ChestFloor(new Food("Granite Bread", 2, "Sturdy bread that restores stamina", 18), Arr[6, 10] as Dungeon),
+                new BattleFloor(Arr[6, 10] as Dungeon, new Battle(Enemy.getEnemies(3, DungeonDif.MEDIUM))),
+                new ChestFloor(new Weapon("Stone Hammer", "A heavy hammer that crushes rocks", 35), Arr[6, 10] as Dungeon),
+                new ChestFloor(new Weapon("Stone Shield", "A shield made from solid stone", 12), Arr[6, 10] as Dungeon),
+            });
+
+            // Skyward Sword Temple (HARD) - 6 rooms (added more battle floors)
+            Arr[7, 5] = new Dungeon("Skyward Sword Temple", null, DungeonDif.HARD);
+            (Arr[7, 5] as Dungeon).setFloor(new List<Floor>
+            {
+                new RestFloor(Arr[7, 5] as Dungeon),
+                new ChestFloor(new Food("Skyfruit", 2, "A mystical fruit that boosts agility", 40), Arr[7, 5] as Dungeon),
+                new BattleFloor(Arr[7, 5] as Dungeon, new Battle(Enemy.getEnemies(4, DungeonDif.HARD))),
+                new ChestFloor(new Weapon("Skyward Sword", "A legendary sword said to pierce through the heavens", 45), Arr[7, 5] as Dungeon),
+                new ChestFloor(new Food("Cloud Nectar", 3, "A rare nectar that restores full health", 80), Arr[7, 5] as Dungeon),
+                new ChestFloor(new Weapon("Sky Shield", "A shield forged in the sky, light yet strong", 20), Arr[7, 5] as Dungeon),
+                new BattleFloor(Arr[7, 5] as Dungeon, new Battle(Enemy.getEnemies(5, DungeonDif.HARD))),  // Additional BattleFloor
+                new BattleFloor(Arr[7, 5] as Dungeon, new Battle(Enemy.getEnemies(5, DungeonDif.HARD))),  // Additional BattleFloor
+            });
+
+            // Dark Link's Lair (HARD) - 6 rooms (added more battle floors)
+            Arr[8, 8] = new Dungeon("Dark Link's Lair", null, DungeonDif.HARD);
+            (Arr[8, 8] as Dungeon).setFloor(new List<Floor>
+            {
+                new RestFloor(Arr[8, 8] as Dungeon),
+                new ChestFloor(new Food("Dark Elixir", 1, "An elixir that increases dark magic power", 50), Arr[8, 8] as Dungeon),
+                new BattleFloor(Arr[8, 8] as Dungeon, new Battle(Enemy.getEnemies(4, DungeonDif.HARD))),
+                new ChestFloor(new Weapon("Dark Link's Blade", "A blade imbued with dark magic", 40), Arr[8, 8] as Dungeon),
+                new ChestFloor(new Weapon("Dark Shield", "A shield infused with dark energy", 30), Arr[8, 8] as Dungeon),
+                new ChestFloor(new Food("Shadow Nectar", 2, "A dark nectar that restores health", 60), Arr[8, 8] as Dungeon),
+                new BattleFloor(Arr[8, 8] as Dungeon, new Battle(Enemy.getEnemies(5, DungeonDif.HARD))),  // Additional BattleFloor
+                new BattleFloor(Arr[8, 8] as Dungeon, new Battle(Enemy.getEnemies(5, DungeonDif.HARD))),  // Additional BattleFloor
+            });
+
+            // Temple of Time (HARD) - 6 rooms (added more battle floors)
+            Arr[9, 14] = new Dungeon("Temple of Time", null, DungeonDif.HARD);
+            (Arr[9, 14] as Dungeon).setFloor(new List<Floor>
+            {
+                new RestFloor(Arr[9, 14] as Dungeon),
+                new ChestFloor(new Food("Timeless Nectar", 5, "A nectar that restores full health", 100), Arr[9, 14] as Dungeon),
+                new BattleFloor(Arr[9, 14] as Dungeon, new Battle(Enemy.getEnemies(4, DungeonDif.HARD))),
+                new ChestFloor(new Weapon("Master Sword", "The legendary sword that seals evil", 50), Arr[9, 14] as Dungeon),
+                new ChestFloor(new Weapon("Time Shield", "A shield that bends time itself", 35), Arr[9, 14] as Dungeon),
+                new ChestFloor(new Food("Chrono Fruit", 3, "A fruit that slows down time for a brief period", 75), Arr[9, 14] as Dungeon),
+                new BattleFloor(Arr[9, 14] as Dungeon, new Battle(Enemy.getEnemies(5, DungeonDif.HARD))),  // Additional BattleFloor
+                new BattleFloor(Arr[9, 14] as Dungeon, new Battle(Enemy.getEnemies(5, DungeonDif.HARD))),  // Additional BattleFloor
+            });
+
 
             // NPC Rooms
-            Arr[0, 5] = new NPCroom("Old Man");
-            Arr[3, 3] = new NPCroom("Impa");
-            Arr[5, 10] = new NPCroom("Nabooru");
-            Arr[7, 8] = new NPCroom("Tingle");
-            Arr[9, 12] = new NPCroom("The Great Fairy");
+            Arr[0, 5] = new NPCroom("Old Man", "Its dangerous to go alone! with ganon back! you must find a weapon!");
+            Arr[3, 3] = new NPCroom("Impa", "Have you ever heard of the triforce? its said its ten pieces\ncould be used to defeat ancient evil!");
+            Arr[5, 10] = new NPCroom("Nabooru", "Have you seen the dungeons scattered around the map?\nI wonder if they hide treasure!");
+            Arr[7, 8] = new NPCroom("Tingle", "Stop at some of the shops to restock gear!");
+            Arr[9, 12] = new NPCroom("The Great Fairy", "Always scout around for things...\nwho knows what u might find!");
 
             for (int i = 0; i < sizeX; i++)
                 for (int j = 0; j < sizeY; j++)
@@ -195,7 +261,8 @@ namespace Program
         protected string FilledIn; public string getFilledIn() { return FilledIn;  } public void setFilledIn(string c) { FilledIn = c; }
         protected string C; public string getC() { return C; } public void setC(string c) { C = c;  }
         protected string description;
-        public virtual object Interact(Player p) { return null; }      
+        public virtual object Interact(Player p) { return null; }     
+        public Room() { }
         public Room(string Description)
         {
             interactable = false;            
@@ -237,7 +304,7 @@ namespace Program
         List<InventoryItem> itemsForSale;
         public override object Interact(Player p)
         {
-            // 7856 378395
+            // 7856 378395 - mazda birmingham
 
 
 
@@ -281,22 +348,46 @@ namespace Program
 
     public class NPCroom : Room
     {
-        public NPCroom(string description) : base(description) { 
+        private string dialogue;
+        public NPCroom(string description, string _dialogue) : base(description) { 
             interactable = true;
+            dialogue = _dialogue;
             C = "?";
             FilledIn = "[yellow]N[/]";
+        }
+        public override object Interact(Player p)
+        {
+            Console.Clear();
+            p.DrawOverWorld(false);
+            Panel txt = new Panel(dialogue + "\nPress enter to continue");
+            txt.Header = new PanelHeader(description);
+            AnsiConsole.Render(txt);
+            Console.Read();
+            interactable = false;
+            return p;
         }
     }
 
     public class HyruleCastle : Room
     {
-        public HyruleCastle(string Description) : base(Description)
+        public HyruleCastle()
         {
+            C = "?";
+            FilledIn = "[purple]H[/]";
+            description = "Hyrule Castle";
+            interactable = false;
         }
-
+       
         public override object Interact(Player p)
         {
-            throw new NotImplementedException();
+            AnsiConsole.Clear();
+            Panel txt = new Panel("The time to strike is now! Press enter to use the triforce\n to seal away gannondorf!");
+            txt.Header = new PanelHeader("Hyrule Castle: Sanctum");
+            AnsiConsole.Render(txt);
+            Console.ReadLine();
+            System.Threading.Thread.Sleep(1000);
+            DungeonExplorer.GameInstance.EndCredits();
+            return null;
         }
     }
 
@@ -308,7 +399,7 @@ namespace Program
         List<Floor> floors;
         public int numOfFloors { get; private set; }
 
-        public void setFLoor(List<Floor> f)
+        public void setFloor(List<Floor> f)
         {
             floors = f;
             numOfFloors = floors.Count;
@@ -326,6 +417,7 @@ namespace Program
         }
         private void DungeonCompleted()
         {
+            
             interactable = false;
             FilledIn = "[green]D[/]";
         }

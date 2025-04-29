@@ -109,18 +109,70 @@ namespace Program
         }
         
     }
- 
+
     public class Enemy : Creature
     {
+        // SECTION
+        // Functions and fields for getting enemies (already defined in here)
+        // Used for dungeon assignments
+        private static Random rnd = new Random();
+        public static List<Enemy> getEnemies(int ammount, DungeonDif STRENGTH)
+        {
+            List<Enemy> m = new List<Enemy>();
+            for (int i = 0; i < ammount; i++)
+                m.Add(Enemies[rnd.Next(Enemies.Count)]);
+            
+            return m;
+        }
+        private static List<BattleMove> GetMoves(int ammount)
+        {
+            List<BattleMove> m = new List<BattleMove> ();
+            for (int i = 0; i <= ammount; i++)
+                m.Add(EnemyMoves[rnd.Next(EnemyMoves.Count)]);
+            return m;
+        }
+        private static List<Weapon> EnemyWeapons = new List<Weapon>
+        {
+            new Weapon("Simple sword", 10),
+            new Weapon("Flame sword", 12),
+            new Weapon("Poisoned dagger", 8),
+            new Weapon("Heavy club", 15),
+            new Weapon("Spiked mace", 14)
+        };
+        private static List<BattleMove> EnemyMoves = new List<BattleMove>
+        {
+            new AttackingMove("Poison dart", 0, "poison", 3),
+            new AttackingMove("Spit", 5),
+            new DefensiveMove("Recover", 5),
+            new DefensiveMove("Poison ointment", 10, "poison"),
+            new AttackingMove("Fireball", 10, "fire", 2),
+            new AttackingMove("Blazing Slash", 7, "fire", 3),
+            new AttackingMove("Thorn attack", 6, "poison", 2),
+            new DefensiveMove("Healing Mist", 8)
+        };
+        private static List<Enemy> Enemies = new List<Enemy>
+        {
+            // Using GetMoves(3) to randomly assign 3 moves to each enemy
+            new Enemy("Bokoblin", EnemyWeapons[rnd.Next(EnemyWeapons.Count)], GetMoves(3), rnd.Next(10, 120)),
+            new Enemy("Fire Imp", EnemyWeapons[rnd.Next(EnemyWeapons.Count)], GetMoves(3), rnd.Next(10, 120)),
+            new Enemy("Poisonous Spider", EnemyWeapons[rnd.Next(EnemyWeapons.Count)], GetMoves(3), rnd.Next(10, 120)),
+            new Enemy("Goblin Warrior", EnemyWeapons[rnd.Next(EnemyWeapons.Count)], GetMoves(3), rnd.Next(10, 120)),
+            new Enemy("Flame Knight", EnemyWeapons[rnd.Next(EnemyWeapons.Count)], GetMoves(3), rnd.Next(10, 120)),
+            new Enemy("Venomous Wraith", EnemyWeapons[rnd.Next(EnemyWeapons.Count)], GetMoves(3), rnd.Next(10, 120)),
+            new Enemy("Stone Golem", EnemyWeapons[rnd.Next(EnemyWeapons.Count)], GetMoves(3), rnd.Next(10, 120)),
+            new Enemy("Dark Elf", EnemyWeapons[rnd.Next(EnemyWeapons.Count)], GetMoves(3), rnd.Next(10, 120))
+        };
+
         public Weapon EnemyWeapon;
         public List<BattleMove> Moves;
-        public Enemy(string _name, Weapon enemyWeapon, List<BattleMove> _Moves)
+        public Enemy(string _name, Weapon enemyWeapon, List<BattleMove> _Moves, int maxHealth)
         {
+            
             Moves = _Moves;
             BattleEffect = new StatusEffect();
             name = _name;
-            MaxHealth = 150;
-            Health = 50;
+            MaxHealth = maxHealth;
+            Health = rnd.Next(maxHealth / 3, maxHealth);
             EnemyWeapon = enemyWeapon;
         }
         public override object Battleturn(Creature player)
@@ -142,7 +194,7 @@ namespace Program
                     var defensiveMoves = Moves.Where(move => move.type == moveType.defend).ToList(); // Filter for only defensive moves
                     if (defensiveMoves.Count > 0)
                     {
-                        Enemy e = new Enemy(this.name, this.EnemyWeapon, this.Moves);
+                        Enemy e = new Enemy(this.name, this.EnemyWeapon, this.Moves, this.MaxHealth);
                         e = defensiveMoves[rnd.Next(defensiveMoves.Count - 1)].doMove(this) as Enemy;
                         this.Health = e.Health;
                         this.BattleEffect = e.BattleEffect; // Makes new instance and wraps back to current instance if move is defensive.

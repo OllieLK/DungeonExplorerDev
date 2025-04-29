@@ -12,8 +12,8 @@ namespace Program
     {
         private List<InventoryItem> ItemDrops = new List<InventoryItem>();
         private Player Player;
-        private List<Creature> Enemies;
-        public Battle(List<Creature> e)
+        private List<Enemy> Enemies;
+        public Battle(List<Enemy> e)
         {            
             Enemies = e;                     
         }

@@ -80,6 +80,7 @@ namespace Program
     {
         string effectToClear;
         int Recovery;
+        
         public Food(string name, int maxnoOfItem, string desc, int recovery)
         {
             noOfItem = maxnoOfItem;
@@ -156,6 +157,12 @@ namespace Program
     public class Weapon : InventoryItem
     {
         public int Damage;
+        public Weapon(string name, int damage)
+        {
+            Damage = damage;
+            sName = name;
+            type = "weapon";
+        }
         public Weapon(string name, string desc, int damage)
         {
             sName = name;

@@ -46,12 +46,16 @@ namespace Program
         void gameLoop()
         {
             do { 
-            
-                
+                           
                 Console.Clear(); // Clears console at start of new turn
                 P1.OverWorldTurnMenu();
                 
             } while (true);
+        }
+
+        public void EndCredits()
+        {
+
         }
     }
 }

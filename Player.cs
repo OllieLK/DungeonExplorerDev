@@ -115,18 +115,19 @@ namespace Program
             Health = 70;
             numberOfCoins = 10;
             MaxHealth = 100;
-            pInv = new PlayerInventory(5); // Initializing inventory
+            pInv = new PlayerInventory(); // Initializing inventory
             posX = 0;
             posY = 0;
             GameMap = new Map(posX, posY);
             CurrentRoom = GameMap.getRoomFromArr(posX, posY); // Initializing current room
 
+            pInv.PickUpItem(new Weapon("Club", "Basic club", 5));
             // Adding the Functions within here to the List of action menu functions
             
             ActionMenuFunctions.Add(new ActionMenuAction(ScoutForItems, "Scout Around For Items"));
         }
 
-        public void TriForceFinished()
+        private void TriForceFinished()
         {
             AnsiConsole.Clear();
             DrawOverWorld(false);
@@ -139,8 +140,8 @@ namespace Program
 
         public void OverWorldTurnMenu()
         {
-            if (TriForce == 8)
-
+            if (TriForce == 10)
+                TriForceFinished();
             GameMap.UpdateShops();
             DrawOverWorld(true);
             List<char> Valids = new List<char> { 'w', 'a', 's', 'd', 'e', 'q' };
@@ -152,12 +153,15 @@ namespace Program
             {
                 case 'r':
                     this.CurrentRoom.Interact(this);
+                    if (CurrentRoom.GetType() == typeof(Dungeon))
+                        if (CurrentRoom.interactable == false)
+                            TriForce++;
                     break;
                 case 'q':
                     ScoutForItems();
                     break;
                 case 'e':
-                    /*DungeonExplorer.GameInstance.WrapPlayer(*/pInv.DrawInventory("", this)/*)*/;                  
+                    pInv.DrawInventory("", this);                  
                     break;
                 default:
                     MoveMenu(keyPressed);
@@ -231,6 +235,7 @@ namespace Program
             {
                 controls += "\nR - Interact";
             }
+            controls += "\n\nTriforce: " + TriForce + "/" + 10;
             string mapstr = "";
             mapstr += Utils.Convert2DArrayToString(this.GameMap.a);
             mapstr += ":pushpin: ";
@@ -301,21 +306,13 @@ namespace Program
     public class PlayerInventory
     {
         // Simple constructor assigns the capacity
-        public PlayerInventory(int inCapacity)
+        public PlayerInventory()
         {
-            iCapacity = inCapacity;
-           
-            
+                    
         }
-        private int iCapacity;
-        public int getICapacity() { return iCapacity;  }
-        public void setICapacity(int setV) { iCapacity = setV; } // Getters and setters for Capacity if it needs to be changed
+        
 
-        public void DebugInv()
-        {
-            Debug.Assert(Inventory.Count > -1);
-            Debug.Assert(Inventory.Count <= iCapacity);
-        }
+        
         private List<InventoryItem> Inventory = new List<InventoryItem>(); // The list of inventory items the player currently has
         public int GetInventoryCount() { return Inventory.Count;}
 
@@ -485,11 +482,7 @@ namespace Program
         // Adds one inventory item to the list, checking not full first
         public void PickUpItem(InventoryItem ItemToAdd) 
         {
-            if (Inventory.Count == iCapacity) // Checking inventory not full
-            {
-                AnsiConsole.Render(new Panel("Inventory is full\nPress enter to return"));
-                Console.ReadLine();
-            }
+            
             foreach(InventoryItem i in Inventory)
             {
                 if (i.sName == ItemToAdd.sName)
