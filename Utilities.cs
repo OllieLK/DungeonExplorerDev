@@ -8,30 +8,20 @@ namespace Program
     {
         public static string Convert2DArrayToString(string[,] array)
         {
-            // Initialize an empty string to hold the result
             string result = string.Empty;
-
-            // Loop through each row of the 2D array
             for (int i = 0; i < array.GetLength(0); i++)
             {
-                // Create a list to hold the elements of the current row
                 var row = new List<string>();
-
-                // Loop through each column of the current row
                 for (int j = 0; j < array.GetLength(1); j++)
                 {
-                    // Add the element to the row list as a string
                     row.Add(array[i, j].ToString());
                 }
-
-                // Join the row elements with a space (or other separator if needed)
                 result += string.Join(" ", row);
 
                 if (i < (array.GetLength(0) - 1))
                     result += "\n";
             }
             result += "\n";
-            // Return the final result string
             return result;
         }
     }
@@ -83,12 +73,12 @@ namespace Program
         {
             ConsoleKeyInfo key = Console.ReadKey();
             
-            if (ValidKeys.Contains(key.KeyChar)) { return key.KeyChar; };
-            while (ValidKeys.Contains(key.KeyChar) == false)
+            if (ValidKeys.Contains(Char.ToLower(key.KeyChar))) { return Char.ToLower(key.KeyChar); };
+            while (ValidKeys.Contains(Char.ToLower(key.KeyChar)) == false)
             {
                 key = Console.ReadKey();
             }
-            return key.KeyChar;
+            return Char.ToLower(key.KeyChar);
         }
     }
     

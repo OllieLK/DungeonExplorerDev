@@ -11,8 +11,8 @@ namespace Program
     public class Battle
     {
         private List<InventoryItem> ItemDrops = new List<InventoryItem>();
-        private Player Player;
-        private List<Enemy> Enemies;
+        private Player Player { get ; set; }
+        private List<Enemy> Enemies { get; set; }
         public Battle(List<Enemy> e)
         {            
             Enemies = e;                     

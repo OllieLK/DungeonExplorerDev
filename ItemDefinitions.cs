@@ -23,14 +23,15 @@ namespace Program
 
     public abstract class InventoryItem
     {
-        
-        public int SalePrice;
+        public int SalePrice { get; protected set; }
         public virtual Player Use(Player p) { return null;  }
-        public string type;
-        public int maxNoOfItem { get; set; }
+        public string type { get; protected set; }
+        public int maxNoOfItem { get; protected set; }
         public int noOfItem { get; set; }
-        public string sName { get; set; }
-        public string sDescription;
+        public string sName { get; protected set; }
+
+        public string sDescription { get; protected set; }
+
         private static List<InventoryItem> RandomItems;
 
         public static void initRandomItems()
@@ -156,7 +157,7 @@ namespace Program
 
     public class Weapon : InventoryItem
     {
-        public int Damage;
+        public int Damage { get; private set; }
         public Weapon(string name, int damage)
         {
             Damage = damage;

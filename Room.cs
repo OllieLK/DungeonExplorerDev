@@ -41,8 +41,8 @@ namespace Program
         public const int Mediums = 4;
         public const int Hards = 3;
 
-        public string[,] a;
-        int sizeX = 10, sizeY = 20;
+        public string[,] a { get; private set; }
+        private const int sizeX = 10, sizeY = 20;
         private Room[,] Arr; public Room getRoomFromArr(int x, int y) { return Arr[x, y]; }
 
         // Initializes each room in the map array with a default character and description
@@ -248,20 +248,17 @@ namespace Program
     /// </summary>
     /// 
 
-    interface IInteractable
-    {
-        object interact();
-    }
 
     public abstract class Room
     {
-        
-        public bool interactable;
+
+        public bool interactable { get; set; }
+
         public List<InventoryItem> FloorItems = new List<InventoryItem>(); // List for floor items.
         protected string FilledIn; public string getFilledIn() { return FilledIn;  } public void setFilledIn(string c) { FilledIn = c; }
         protected string C; public string getC() { return C; } public void setC(string c) { C = c;  }
         protected string description;
-        public virtual object Interact(Player p) { return null; }     
+        public virtual object Interact(Player p) { return null; }
         public Room() { }
         public Room(string Description)
         {
@@ -301,12 +298,10 @@ namespace Program
             C = "?";
             FilledIn = "[blue]S[/]";
         }
-        List<InventoryItem> itemsForSale;
+        private List<InventoryItem> itemsForSale;
         public override object Interact(Player p)
         {
             // 7856 378395 - mazda birmingham
-
-
 
             Console.SetCursorPosition(0, 17);
             List<char> valids = new List<char> { 'q' };
@@ -393,10 +388,10 @@ namespace Program
 
     public class Dungeon : Room
     {
-        public DungeonDif Difficulty;
-        int floorsCompleted;
-        int currentFloor;
-        List<Floor> floors;
+        public DungeonDif Difficulty { get; private set;  }
+        private int floorsCompleted { get; set; } = 0;
+        private int currentFloor { get; set; }
+        private List<Floor> floors { get; set; }
         public int numOfFloors { get; private set; }
 
         public void setFloor(List<Floor> f)
@@ -436,20 +431,50 @@ namespace Program
             else
                 DungeonLoop(p);
         }
+
+        private static readonly Dictionary<DungeonDif, string> DifficultyStrings = new Dictionary<DungeonDif, string>
+        {
+        { DungeonDif.EASY, "Easy" },
+        { DungeonDif.MEDIUM, "Medium" },
+        { DungeonDif.HARD, "Hard" }
+        };
+
         public override object Interact(Player p)
         {
             Console.Clear();
             p.DrawOverWorld(false);
-            AnsiConsole.Render(new Panel(description + "    Floors Completed: " + floorsCompleted + "/" + floors.Count + "\n\n(Y) Go to entrance     (N) Leave"));
+            switch (Difficulty)
+            {
+                case DungeonDif.EASY:
+                    break;
+                case DungeonDif.MEDIUM:
+                    if (p.easyCompleted == false)
+                    {
+                        AnsiConsole.Render(new Panel("Difficulty: Medium\nComplete easy dungeons first!!\nPress Enter"));
+                        Console.ReadLine();
+                        return p;
+                    }
+                    break;
+                case DungeonDif.HARD:
+                    if (p.mediumCompleted != true)
+                    {
+                        AnsiConsole.Render(new Panel("Difficulty: Hard\nComplete medium dungeons first!!\nPress Enter"));
+                        Console.ReadLine();
+                        return p;
+                    }
+                    break;
+            }
+            AnsiConsole.Render(new Panel("Difficulty: " + DifficultyStrings[Difficulty] + "\n" + description + "    Floors Completed: " + floorsCompleted + "/" + floors.Count + "\n\n(Y) Go to entrance     (N) Leave"));
             if (GameInputs.K(new List<char> { 'y', 'n' }) == 'y')
             {
-                
+
                 DungeonLoop(p);
                 return p;
-            } else
+            }
+            else
             {
                 return p;
             }
         }
     }
-}
+    }

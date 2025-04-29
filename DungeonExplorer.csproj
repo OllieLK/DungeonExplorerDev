@@ -64,7 +64,6 @@
   <ItemGroup>
     <Compile Include="Battle.cs" />
     <Compile Include="BattleMoves.cs" />
-    <Compile Include="NPCquests.cs" />
     <Compile Include="Room.cs" />
     <Compile Include="Saving.cs" />
     <Compile Include="Enemy.cs" />

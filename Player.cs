@@ -28,26 +28,18 @@ namespace Program
     ///     
     /// Class Inventory Item
     /// </summary>
-    public class ActionMenuAction
-    {
-        public Action A;
-        public string N;
-        public ActionMenuAction(Action iA, string iN)
-        {
-            // Basic constructor assigning values
-            A = iA;
-            N = iN;
-        }
-    }
     
     public class Player : Creature
     {
-        public int TriForce;
-        public bool TriForceFinish = false;
+        public bool easyCompleted { get; private set; }
+        public bool mediumCompleted {  get; private set; }
+        private int easyCompletedNum;
+        private int mediumCompletedNum;
+        private int TriForce;
+        private bool TriForceFinish = false;
         public Map GameMap;
         public int numberOfCoins;
         public Room CurrentRoom; // Current room player is in
-        public List<ActionMenuAction> ActionMenuFunctions = new List<ActionMenuAction>();
         int posX; public void setPosX(int i) { posX = i; }
         public int getPosX() { return posX; } // The current position of the player within the map
         int posY; public void setPosY(int i) { posY = i; }
@@ -55,12 +47,6 @@ namespace Program
         
         public PlayerInventory pInv; // Instance of PlayerInventory class, representing the players inventory
 
-        public void PlayerDebug() // Simple debug functions
-        {
-            Debug.Assert(Health <= MaxHealth);
-            Debug.Assert(Health > 0);
-            Debug.Assert(ActionMenuFunctions.Count() > 0);
-        }
 
         // Battle related functions for player
         public override object Battleturn(Creature target)
@@ -124,7 +110,6 @@ namespace Program
             pInv.PickUpItem(new Weapon("Club", "Basic club", 5));
             // Adding the Functions within here to the List of action menu functions
             
-            ActionMenuFunctions.Add(new ActionMenuAction(ScoutForItems, "Scout Around For Items"));
         }
 
         private void TriForceFinished()
@@ -140,6 +125,10 @@ namespace Program
 
         public void OverWorldTurnMenu()
         {
+            if (easyCompletedNum == Map.Easies)
+                easyCompleted = true;
+            if (mediumCompletedNum == Map.Mediums)
+                mediumCompleted = true;
             if (TriForce == 10)
                 TriForceFinished();
             GameMap.UpdateShops();
@@ -153,9 +142,16 @@ namespace Program
             {
                 case 'r':
                     this.CurrentRoom.Interact(this);
-                    if (CurrentRoom.GetType() == typeof(Dungeon))
+                    if (CurrentRoom.GetType() == typeof(Dungeon)) // If dungeon has been completed, set the completed nums up and increase max health
                         if (CurrentRoom.interactable == false)
+                        {
+                            if ((CurrentRoom as Dungeon).Difficulty == DungeonDif.EASY)
+                                easyCompletedNum++;
+                            else if ((CurrentRoom as Dungeon).Difficulty == DungeonDif.MEDIUM)
+                                mediumCompletedNum++;
                             TriForce++;
+                            MaxHealth += 20;
+                        }
                     break;
                 case 'q':
                     ScoutForItems();
@@ -221,8 +217,7 @@ namespace Program
                     break;
             }
         }
-
-        
+       
 
         public void DrawOverWorld(bool showControls)
         {
@@ -243,9 +238,7 @@ namespace Program
             
             tab.Title = new TableTitle("THE LEGEND OF ZELDA");
             tab.AddColumn("World Map");
-            
-
-
+ 
             if (showControls)
             {
                 tab.AddColumn("Controls");
@@ -305,16 +298,8 @@ namespace Program
     // Player inventory class, with various functions to manage the inventory
     public class PlayerInventory
     {
-        // Simple constructor assigns the capacity
-        public PlayerInventory()
-        {
-                    
-        }
-        
-
-        
+                      
         private List<InventoryItem> Inventory = new List<InventoryItem>(); // The list of inventory items the player currently has
-        public int GetInventoryCount() { return Inventory.Count;}
 
         public IBattleUsable GetItemInBattle()
         {
@@ -336,10 +321,6 @@ namespace Program
             return chosenItem;
         }
 
-        public bool IsItemPresent(InventoryItem item)
-        {
-            return (Inventory.Contains(item));
-        }
         public List<InventoryItem> GetQueriedList(string Query)
         {
             List<InventoryItem> Queried = new List<InventoryItem>();
@@ -348,7 +329,7 @@ namespace Program
             Queried = Inventory.Where(InventoryItem => InventoryItem.type == Query).ToList();
             return Queried;
         }
-        public Player ShowInventoryItem(InventoryItem item, Player p) {
+        private Player ShowInventoryItem(InventoryItem item, Player p) {
             Console.SetCursorPosition(0, 22);
             List<char> valids = new List<char> { 'd', 'q' };
             Panel showPanel;
@@ -496,21 +477,6 @@ namespace Program
             return;
         }
 
-        public void DeleteItem(InventoryItem ItemToRemove, bool All, bool Keyitem)
-        {
-            if (All)
-                Inventory.Remove(ItemToRemove);
-            for (int i = 0; i < Inventory.Count; i++)
-            {
-                if (Inventory[i] == ItemToRemove)
-                {
-                    if (Inventory[i].noOfItem != 1)
-                        Inventory[i].noOfItem--; // quick search to find index to remove at
-                    else
-                        Inventory.Remove(ItemToRemove);
-                }
-            }
-        }
         // Simple function to delete item. does need a quick linear search to find the index to remove at if removing one.
         public void DeleteItem(InventoryItem ItemToRemove, bool All) // Remove item from the inventory
         {
