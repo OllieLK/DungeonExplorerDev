@@ -5,6 +5,7 @@ using System.Diagnostics;
 using Spectre.Console;
 using System.Diagnostics.Eventing.Reader;
 using System.Net;
+using System.Runtime.Remoting.Messaging;
 
 
 namespace Program
@@ -28,9 +29,11 @@ namespace Program
     ///     
     /// Class Inventory Item
     /// </summary>
-    
+
     public class Player : Creature
     {
+        
+
         public bool easyCompleted { get; private set; }
         public bool mediumCompleted {  get; private set; }
         private int easyCompletedNum;

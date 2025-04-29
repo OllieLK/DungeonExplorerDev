@@ -166,6 +166,8 @@ namespace Program
         }
         public Weapon(string name, string desc, int damage)
         {
+            noOfItem = 1;
+            maxNoOfItem = 1;
             sName = name;
             Damage = damage;
             sDescription = desc;

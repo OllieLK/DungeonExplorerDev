@@ -65,7 +65,6 @@
     <Compile Include="Battle.cs" />
     <Compile Include="BattleMoves.cs" />
     <Compile Include="Room.cs" />
-    <Compile Include="Saving.cs" />
     <Compile Include="Enemy.cs" />
     <Compile Include="Floor.cs" />
     <Compile Include="Game.cs" />

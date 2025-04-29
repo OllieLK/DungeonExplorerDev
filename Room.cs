@@ -30,6 +30,7 @@ namespace Program
 
     public class Map
     {
+
         public void openHyruleCastle()
         {
             foreach (Room R in Arr)
@@ -274,6 +275,7 @@ namespace Program
         {
             return description;
         }
+
     }
 
     public class Field : Room
@@ -283,6 +285,9 @@ namespace Program
             C = "?";
             FilledIn = " ";
         }
+
+        
+
     }
 
     public class Shop : Room
@@ -339,6 +344,7 @@ namespace Program
             }
         }
 
+        
     }
 
     public class NPCroom : Room
@@ -350,6 +356,8 @@ namespace Program
             C = "?";
             FilledIn = "[yellow]N[/]";
         }
+
+        
         public override object Interact(Player p)
         {
             Console.Clear();
@@ -372,7 +380,8 @@ namespace Program
             description = "Hyrule Castle";
             interactable = false;
         }
-       
+
+
         public override object Interact(Player p)
         {
             AnsiConsole.Clear();
@@ -384,6 +393,8 @@ namespace Program
             DungeonExplorer.GameInstance.EndCredits();
             return null;
         }
+
+        
     }
 
     public class Dungeon : Room
@@ -476,5 +487,7 @@ namespace Program
                 return p;
             }
         }
+
+        
     }
-    }
+}
