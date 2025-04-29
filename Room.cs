@@ -21,7 +21,7 @@ namespace Program
     ///     as floor items to be picked up by the player
     /// </summary>
     
-    public enum DungeonDif
+    public enum DungeonDif // Dungeon difficulty
     {      
         EASY,
         MEDIUM,
@@ -43,7 +43,7 @@ namespace Program
         public const int Hards = 3;
 
         public string[,] a { get; private set; }
-        private const int sizeX = 10, sizeY = 20;
+        public const int sizeX = 10, sizeY = 20;
         private Room[,] Arr; public Room getRoomFromArr(int x, int y) { return Arr[x, y]; }
 
         // Initializes each room in the map array with a default character and description
@@ -196,6 +196,7 @@ namespace Program
             Arr[7, 8] = new NPCroom("Tingle", "Stop at some of the shops to restock gear!");
             Arr[9, 12] = new NPCroom("The Great Fairy", "Always scout around for things...\nwho knows what u might find!");
 
+            // Assign fields to blank rooms
             for (int i = 0; i < sizeX; i++)
                 for (int j = 0; j < sizeY; j++)
                     if (Arr[i, j] == null)
@@ -204,7 +205,7 @@ namespace Program
                         if (rnd.Next(3) == 1)
                             Arr[i, j].FloorItems.Add(new Coin(rnd.Next(60)));
                     }
-
+            // Assign starting position
             Arr[startingposX, startingposY].setFilledIn("[purple]H[/]");           
             Arr[startingposX, startingposY].setDescription("Your house");         
             Arr[startingposX, startingposY].setC("U");
@@ -285,9 +286,6 @@ namespace Program
             C = "?";
             FilledIn = " ";
         }
-
-        
-
     }
 
     public class Shop : Room
@@ -306,7 +304,6 @@ namespace Program
         private List<InventoryItem> itemsForSale;
         public override object Interact(Player p)
         {
-            // 7856 378395 - mazda birmingham
 
             Console.SetCursorPosition(0, 17);
             List<char> valids = new List<char> { 'q' };

@@ -15,13 +15,14 @@ namespace Program
         private List<Enemy> Enemies { get; set; }
         public Battle(List<Enemy> e)
         {            
-            Enemies = e;                     
+            Enemies = e;              // Simple constructor        
         }
         public void startBattle(Player p)
         {
             Player = p;
             battleLoop();
         }
+        // Main loop for battle.
         private void battleLoop()
         {            
             while (true)
@@ -99,14 +100,14 @@ namespace Program
             }
             else
             {
-                tab.Title = new TableTitle("Ai Turn");
+                tab.Title = new TableTitle("Ai Turn"); // different header for AI turns
                 foreach (Creature e in Enemies)
                     enemystring = e.name + " " + e.UpdateHealthString() + "\n";
             }
 
             tab.AddColumn(playerhealth);
             tab.AddColumn(enemystring);
-            AnsiConsole.Render(tab);
+            AnsiConsole.Render(tab); // Render table
 
 
             if (playernext)
@@ -119,6 +120,7 @@ namespace Program
             Console.Clear();
             Player.DrawOverWorld(false);
             AnsiConsole.Render(new Panel("Battle Won!\nPress Enter to return."));
+            // On battle end return to dungeon
         }
     }
 }
