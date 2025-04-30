@@ -108,7 +108,7 @@ namespace Program
             GameMap = new Map(posX, posY);
             CurrentRoom = GameMap.getRoomFromArr(posX, posY); // Initializing current room
 
-            pInv.PickUpItem(new Weapon("Club", "Basic club", 5));
+            pInv.PickUpItem(new Weapon("Club", "Basic club", 50));
             // Adding the Functions within here to the List of action menu functions
             
         }
