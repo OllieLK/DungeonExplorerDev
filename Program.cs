@@ -1,29 +1,26 @@
 ﻿using System;
 using Spectre.Console;
 using Spectre.Console.Cli;
+using System.Media;
+using DungeonExplorer;
 
 namespace Program
 {
     public class DungeonExplorer
     {
-        public static Game GameInstance;
+        private static SoundPlayer p; // Just for a bit of fun - background music.
+        public static Game GameInstance; // Instance
 
-        public static void Main(string[] Args)
+        public static void Main()
         {
-            Console.CursorVisible = false;
-            
-            try
-            {
-                Testing.RunTests(); // Run tests at start of game.
-            }
-            catch
-            {
-                Console.WriteLine("Failed during tests");
-            }
-            
+            GameTests g = new GameTests();
+            g.RunTests(); // Run test class
+
+
+
+            Console.CursorVisible = false; // Set curser to be invisible
             GameInstance = new Game();
-            
-            
+            GameInstance.titleScreen();           // Start game
         }
     }
 }

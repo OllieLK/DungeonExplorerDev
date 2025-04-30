@@ -2,6 +2,11 @@
 using System;
 using System.Linq;
 using System.Diagnostics;
+using Spectre.Console;
+using System.Diagnostics.Eventing.Reader;
+using System.Net;
+using System.Runtime.Remoting.Messaging;
+
 
 namespace Program
 {
@@ -24,88 +29,141 @@ namespace Program
     ///     
     /// Class Inventory Item
     /// </summary>
-    public class ActionMenuAction
-    {
-        public Action A;
-        public string N;
-        public ActionMenuAction(Action iA, string iN)
-        {
-            // Basic constructor assigning values
-            A = iA;
-            N = iN;
-        }
-    }
 
-    
-    public class Player
-    {
+    public class Player : Creature
+    {      
+        public bool easyCompleted { get; private set; }
+        public bool mediumCompleted {  get; private set; }
+        private int easyCompletedNum;
+        private int mediumCompletedNum;
+        private int TriForce;
+        private bool TriForceFinish = false;
         public Map GameMap;
+        public int numberOfCoins;
         public Room CurrentRoom; // Current room player is in
-        public List<ActionMenuAction> ActionMenuFunctions = new List<ActionMenuAction>();
-        int posX; public void setPosX(int i) { posX = i; } public int getPosX() { return posX; } // The current position of the player within the map
-        int posY; public void setPosY(int i) { posY = i; } public int getPosY() { return posY; }
-        int Health;
-        int MaxHealth { get; set; }
+        int posX; public void setPosX(int i) { posX = i; }
+        public int getPosX() { return posX; } // The current position of the player within the map
+        int posY; public void setPosY(int i) { posY = i; }
+        public int getPosY() { return posY; }
+        
         public PlayerInventory pInv; // Instance of PlayerInventory class, representing the players inventory
 
-        public void PlayerDebug() // Simple debug functions
+
+        // Battle related functions for player
+        public override object Battleturn(Creature target)
         {
-            Debug.Assert(Health <= MaxHealth);
-            Debug.Assert(Health > 0);
-            Debug.Assert(ActionMenuFunctions.Count() > 0);
+            Console.SetCursorPosition(0, 24);
+            string displayString = "Press E to use an item on an enemy on an enemy\n";
+            List<char> ValidInputs = new List<char> { 'e' };
+            var FilteredInventory = pInv.GetQueriedList("weapon"); // Filter weapons and show them
+            List<Weapon> Weapons = new List<Weapon>();
+            for (int i = 0; i < FilteredInventory.Count; i++)
+            {
+                Weapons.Add(FilteredInventory[i] as Weapon);
+                ValidInputs.Add((char)('0' + i + 1)); // Add each index to the valid inputs
+                displayString += "(" + (i + 1) + ") " + FilteredInventory[i].sName + "\n"; // Output all weapons
+            }
+            AnsiConsole.Render(new Panel(displayString));
+            char choice = GameInputs.K(ValidInputs);
+            if (choice == 'e') // If player chose to use item
+            {
+                var itemToUse = pInv.GetItemInBattle();
+                if (itemToUse != null)
+                    target = itemToUse.UseInBattle(target); // Use item on target.
+                else
+                {
+                    Console.SetCursorPosition(0, 26);
+                    AnsiConsole.Render(new Panel("No Valid Items To Use!\nPress enter to return"));
+                    Console.ReadLine(); 
+                    return target;
+                }
+            }                
+            else
+            { // If not use selected weapon on target
+                Weapon SelectedWeapon = Weapons[choice - '0' - 1];
+                target.Health -= SelectedWeapon.Damage;
+            }
+            return target;
+        }
+        public override void onDeath() // Player death screen
+        {
+            Console.Clear();
+            AnsiConsole.Render(new Panel("YOU HAVE DIED.\nPRESS ENTER TO RETURN TO TITLE SCREEN"));
+            Console.ReadLine();
+            DungeonExplorer.Main();
         }
 
-        public Player() {
-            // Assigning starting values
+        public Player()
+        {
 
-            Health = 100;
+            // Assigning starting values
+            BattleEffect = new StatusEffect();
+            name = "Link";
+            Health = 70;
+            numberOfCoins = 10;
             MaxHealth = 100;
-            pInv = new PlayerInventory(5); // Initializing inventory
-            posX = 5;
-            posY = 8;
+            pInv = new PlayerInventory(); // Initializing inventory
+            posX = 0;
+            posY = 0;
             GameMap = new Map(posX, posY);
             CurrentRoom = GameMap.getRoomFromArr(posX, posY); // Initializing current room
 
+            pInv.PickUpItem(new Weapon("Club", "Basic club", 5));
             // Adding the Functions within here to the List of action menu functions
-            ActionMenuFunctions.Add(new ActionMenuAction(pInv.ShowInventory, "Show Inventory"));
-            ActionMenuFunctions.Add(new ActionMenuAction(ShowRoomDescription, "Show Room Description"));
-            ActionMenuFunctions.Add(new ActionMenuAction(ScoutForItems, "Scout Around For Items"));
+            
         }
 
-
-        // Basic function to show the players health, made to look nice using colours and unicode characters.
-        public (string, string) UpdateHealthString()
+        private void TriForceFinished()
         {
-            string red = string.Empty;
-            string grey = string.Empty;
-            for (int i = 0; i < MaxHealth; i = i + 10)
-            {
-                if ((Health - i) > 4)
-                {
-                    red += "♥";
-
-
-                }
-                else
-                {
-                    grey += "♥";
-                }
-            }
-            return (red, grey);
+            // trigger map to open hyrule castle after all dungeons completed
+            AnsiConsole.Clear();
+            DrawOverWorld(false);
+            AnsiConsole.Render(new Panel("You have collected all the pieces of the triforce! Go to Hyrule castle and fight ganon!\nPress enter"));
+            Console.ReadLine();
+            TriForceFinish = true;
+            GameMap.openHyruleCastle();
         }
+        
 
         public void OverWorldTurnMenu()
         {
-            GameMap.UpdateArray();
+            // Check if the harder dungeons can be unlocked, or if all dungeons are finished open hyrule castle
+            if (easyCompletedNum == Map.Easies)
+                easyCompleted = true;
+            if (mediumCompletedNum == Map.Mediums)
+                mediumCompleted = true;
+            if (TriForce == 10)
+                TriForceFinished();
 
-            char keyPressed = GameInputs.K(new List<Char> { 'w', 'a', 's', 'd', 'e', 'q' });
+
+            DrawOverWorld(true);
+
+
+            List<char> Valids = new List<char> { 'w', 'a', 's', 'd', 'e', 'q' };
+            if (CurrentRoom.interactable == true)            
+                Valids.Add('r'); // If room is interactable add r to the valid inputs
+            
+            char keyPressed = GameInputs.K(Valids);
             switch (keyPressed)
             {
+                case 'r':
+                    this.CurrentRoom.Interact(this);
+                    if (CurrentRoom.GetType() == typeof(Dungeon)) // If dungeon has been completed, set the completed nums up and increase max health
+                        if (CurrentRoom.interactable == false)
+                        {
+                            if ((CurrentRoom as Dungeon).Difficulty == DungeonDif.EASY)
+                                easyCompletedNum++;
+                            else if ((CurrentRoom as Dungeon).Difficulty == DungeonDif.MEDIUM)
+                                mediumCompletedNum++;
+                            TriForce++;
+                            MaxHealth += 20;
+                        }
+                    break;
                 case 'q':
-
+                    ScoutForItems();
                     break;
                 case 'e':
-                    DrawScreen.DrawInventory(this);
+                    pInv.DrawInventory("", this);                  
                     break;
                 default:
                     MoveMenu(keyPressed);
@@ -116,9 +174,13 @@ namespace Program
         // Function to show the user the current FloorItems that are present in the room theyre in. allows them to inspect, pickup or leave them
         private void ScoutForItems()
         {
+            Console.Clear();
+            DrawOverWorld(false);
+            string scoutString = "";
+            List<char> valids = new List<char> { 'q' };
             if (CurrentRoom.FloorItems.Count == 0) // IF no items present displays quick message and returns
             {
-                Console.WriteLine("Theres nothing around here...\nPress enter to return.");
+                AnsiConsole.Write(new Panel("There is nothing around here to collect.\nPress enter to return to main menu"));
                 Console.ReadLine();
                 return;
             }
@@ -126,43 +188,81 @@ namespace Program
             {
                 for (int i = 0; i < CurrentRoom.FloorItems.Count; i++) // Displays floor items present in list
                 {
-                    Console.WriteLine("[" + (i + 1) + "] " + CurrentRoom.FloorItems[i].sName);
+                    scoutString += ("(" + (i + 1) + ") " + CurrentRoom.FloorItems[i].sName + "\n");
+                    valids.Add((char)('0' + i + 1));
                 }
             }
 
             // User input for what to do about the floor items
-            Console.WriteLine("Type the number of the item you would like to inspect / pick up.\nIf you dont want to pick any up, press 0");
-            int MChoice = GameInputs.V(CurrentRoom.FloorItems.Count, 0);
-
-            if (MChoice == 0)
+            scoutString += ("Type the number of the item you would like to inspect / pick up.\nIf you dont want to pick any up, press Q");
+            AnsiConsole.Render(new Panel(scoutString));
+            char MChoice = GameInputs.K(valids);
+            
+            switch (MChoice)
             {
-                return; // Returns if user presses 0
+                case 'q':
+                    return;
+                default:
+                    int k = MChoice - '0';
+                    Console.SetCursorPosition(0, 22);
+                    scoutString = "";
+                    scoutString += CurrentRoom.FloorItems[k - 1].sName + ": " + CurrentRoom.FloorItems[k - 1].sDescription + "\n(E) Pickup\n(Q) Leave";
+                    AnsiConsole.Render(new Panel(scoutString));
+                    switch(GameInputs.K(new List<char> { 'e', 'q' }))
+                    {
+                        case 'e':
+                            if (CurrentRoom.FloorItems[k - 1].type == "coin")
+                                this.numberOfCoins += CurrentRoom.FloorItems[k - 1].noOfItem;
+                            else
+                                pInv.PickUpItem(CurrentRoom.FloorItems[k - 1]); // Add item to inventory
+                            CurrentRoom.FloorItems.RemoveAt((k - 1)); // Remove from the floor
+                            return;
+                        case 'q':
+                            return;
+                    }
+                    break;
             }
-
-            // Shows description of floor item
-            Console.WriteLine(CurrentRoom.FloorItems[MChoice - 1].sName + ": " + CurrentRoom.FloorItems[MChoice - 1].sDescription + "\n[1] Pickup\n[2] Leave");
-            if (GameInputs.V(2) == 1)
-            {
-                pInv.PickUpItem(CurrentRoom.FloorItems[MChoice - 1]); // Add item to inventory
-                CurrentRoom.FloorItems.RemoveAt((MChoice - 1)); // Remove from the floor
-            } else
-            {
-                Console.WriteLine("You Return");
-            }
-        }
-
-        // Simple function to get and show the current room description
-        private void ShowRoomDescription()
-        {
-            Console.WriteLine(CurrentRoom.GetDescription() + "\nPress Enter To Continue");
-            Console.ReadLine();
         }
        
+        
+        public void DrawOverWorld(bool showControls)
+        {
+            string controls;
+            string healthstr = this.UpdateHealthString();
+            var tab = new Table();
+            this.GameMap.UpdateArray();
+            controls = "WASD - Move around\nE - Open Inventory\nQ - Forage For Items";
+            if (CurrentRoom.interactable == true)
+            {
+                controls += "\nR - Interact";
+            }
+            controls += "\n\nTriforce: " + TriForce + "/" + 10;
+            string mapstr = "";
+            mapstr += Utils.Convert2DArrayToString(this.GameMap.a);
+            mapstr += ":pushpin: ";
+            mapstr += this.GameMap.getRoomFromArr(this.getPosX(), this.getPosY()).GetDescription();
+            
+            tab.Title = new TableTitle("THE LEGEND OF ZELDA");
+            tab.AddColumn("World Map");
+ 
+            if (showControls) // If controls not shown (in dungeon) dont add control column
+            {
+                tab.AddColumn("Controls");
+                tab.AddRow(healthstr + "                   [olive]" + numberOfCoins + " Coins[/]"); // Add
+                tab.AddRow(mapstr, controls);
+            }
+            else
+            {
+                tab.AddRow(healthstr + "                   [olive]" + numberOfCoins + " Coins[/]"); // Add
+                tab.AddRow(mapstr);
+            }
+            // Render the table to the console
+            AnsiConsole.Render(tab);
+        }
+    
         // Menu for moving the player between rooms, using the WASD keys for convinience.
         private void MoveMenu(char direction)
         {
-            
-
             int newX = posX;
             int newY = posY;
 
@@ -184,7 +284,6 @@ namespace Program
                 default:
                     break;
             }
-
             // Check if the new position is valid ( Wouldnt send the player off the map )
             if (GameMap.IsValidPosition(newX, newY))
             {
@@ -195,146 +294,217 @@ namespace Program
 
                 CurrentRoom = GameMap.getRoomFromArr(posX, posY); // Update current room
 
-                // Clear the screen and show the updated map
-                Console.Clear();
-                DrawScreen.drawOverWorld(this.GameMap, this);
+                // Clear the screen and show the updated map               
             }
-        }
-
-        // Displays the players current avaliable actions from the ActionMenuFunctions list, and waits for which one theyd like to do.
-        public void ActionMenu()
-        {
-            Console.ForegroundColor = ConsoleColor.Blue;
-            Console.WriteLine("Action Menu:    ");
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            for (int i = 0; i < ActionMenuFunctions.Count; i++)
-            {
-                Console.WriteLine("[" + (i+1) + "] " + ActionMenuFunctions[i].N); // Looping through list to display.
-            }
-            ActionMenuFunctions[(GameInputs.V(ActionMenuFunctions.Count()) - 1)].A(); // Calling the function the user desires.       
-        }
-
-        
+            GameMap.UpdateArray();
+        }     
     }
 
 
     // Player inventory class, with various functions to manage the inventory
     public class PlayerInventory
     {
-        // Simple constructor assigns the capacity
-        public PlayerInventory(int inCapacity)
-        {
-            iCapacity = inCapacity;
-           
-            Inventory.Add(new InventoryItem("Sausage Roll", 10, 3)); // Initializes the list of inventory items, adding 3 sausage rolls as a placeholder
-            
-        }
-        private int iCapacity;
-        public int getICapacity() { return iCapacity;  }
-        public void setICapacity(int setV) { iCapacity = setV; } // Getters and setters for Capacity if it needs to be changed
-
-        public void DebugInv()
-        {
-            Debug.Assert(Inventory.Count > -1);
-            Debug.Assert(Inventory.Count <= iCapacity);
-        }
+                      
         private List<InventoryItem> Inventory = new List<InventoryItem>(); // The list of inventory items the player currently has
-        public int GetInventoryCount() { return Inventory.Count;}
 
-        public bool IsItemPresent(InventoryItem item)
+        public IBattleUsable GetItemInBattle() // Returns item to use in battle (Filters)
         {
-            return (Inventory.Contains(item));
+            string printString = string.Empty;
+            List<char> valids = new List<char>();
+            var validItems = Inventory.OfType<IBattleUsable>().ToList();
+            if (validItems.Count == 0)
+            {
+                return null;
+            }
+            for (int i = 0; i < validItems.Count; i++) {
+                valids.Add((char)('0' + i + 1));
+                printString += "(" + (i + 1) + ") " + (validItems[i] as InventoryItem).sName;
+            }
+            AnsiConsole.Render(new Panel(printString));
+            var chosenItem = validItems[GameInputs.K(valids) - '0' - 1];
+            this.DeleteItem((chosenItem as InventoryItem), false);
+
+            return chosenItem;
         }
 
-        public string GetQueriedList(string Query)
+        // Simple function to return items that match a given query
+        public List<InventoryItem> GetQueriedList(string Query)
         {
             List<InventoryItem> Queried = new List<InventoryItem>();
-            switch (Query)
+            if (Query == "" || Query == "a")
+                return (Queried = Inventory);                       
+            Queried = Inventory.Where(InventoryItem => InventoryItem.type == Query).ToList();
+            return Queried; 
+        }
+
+        // Show inventory item description and use controls
+        private Player ShowInventoryItem(InventoryItem item, Player p) {
+            Console.SetCursorPosition(0, 22);
+            List<char> valids = new List<char> { 'd', 'q' };
+            Panel showPanel;
+            if (item.GetType() == typeof(Food))
             {
-                case "weapons":
-                    Queried = Inventory.Where(InventoryItem => InventoryItem.sName == "Sword").ToList();
-                    break;
+                showPanel = new Panel(item.sName + ": " + item.sDescription + "\nType: " + item.type + "\n(D) Remove  (Q) Return to menu (U) Use");
+                valids.Add('u');
             }
-            return InvString(Queried);
+            else
+                showPanel = new Panel(item.sName + ": " + item.sDescription + "\nType: " + item.type + "\n(D) Remove  (Q) Return to menu");
+            
+
+            showPanel.Header = new PanelHeader("Item:");
+            AnsiConsole.Render(showPanel);
+            switch (GameInputs.K(valids))
+            {
+                case 'u':
+                    p = item.Use(p); // use item on player
+                    this.DeleteItem(item, false);
+                    break;
+                case 'd':
+                    Console.SetCursorPosition(0, 27);
+                    AnsiConsole.Render(new Panel("(1) Remove one\n(A) Remove all\n(C) Cancel") { Header = new PanelHeader("Remove?") });
+                    switch (GameInputs.K(new List<char> { '1', 'c', 'a' }))
+                    {
+                        case '1':
+                            DeleteItem(item, false); break;
+                        case 'a':
+                            DeleteItem(item, true); break; // Call remove items based on players choice
+                        case 'c':
+                            return p;
+                    }
+                    break;
+                case 'q':
+                    return p;
+            }
+            return p;
         }
-        public string InvString()
+        // Checks for duplicate items and stacks them neatly (for instance if player had 10 steak and 3 in another stack and used one out of the ten, would restack to ten and 2
+        private void UpdateInv()
         {
-            return InvString(new List<InventoryItem>());
+            if (Inventory.Count <= 1)
+                return;
+            for (int i = 0; i < Inventory.Count - 1; i++)
+            {
+                for (int j = i + 1; j < Inventory.Count; j++)
+                {
+                    if (Inventory[i].sName == Inventory[j].sName)
+                    {
+                        int spaceLeft = Inventory[i].maxNoOfItem - Inventory[i].noOfItem;
+                        if (spaceLeft > 0)
+                        {
+                            int amountToMove = Math.Min(spaceLeft, Inventory[j].noOfItem);
+                            Inventory[i].noOfItem += amountToMove;
+                            Inventory[j].noOfItem -= amountToMove;
+                            if (Inventory[j].noOfItem == 0)
+                            {
+                                Inventory.RemoveAt(j);
+                                j--; // stay on same index since list just shifted
+                            }
+                        }
+                    }
+                }
+            }
         }
-        public string InvString(List<InventoryItem> l)
+
+        public Player DrawInventory(string Query, Player p)
+        {
+            UpdateInv();
+            Console.Clear();
+            p.DrawOverWorld(false);
+            Console.SetCursorPosition(0, 17);
+            List<InventoryItem> displayItems = GetQueriedList(Query); // Get filtered list
+            Panel invPanel, queryPanel;
+            queryPanel = new Panel("Sorting Options:\n- (A) All\n- (W) Weapons\n- (F) Foods\n- (K) Key Items\nOr:\n- (Q) Leave Menu");
+            if (Query == "")
+                invPanel = new Panel(InvString(displayItems));
+            else
+                invPanel = new Panel(InvString(displayItems));
+
+            invPanel.Header = new PanelHeader("Inventory");
+            queryPanel.Header = new PanelHeader("Options");
+            
+            AnsiConsole.Write(new Columns(invPanel, queryPanel).Collapse());
+            List<char> valids = new List<char> { 'a', 'w', 'f', 'k', 'q' };
+            for (int i = 0; i < displayItems.Count; i++)
+            {
+                valids.Add((char)('0' + i + 1)); // Add index to valid inputs
+            }
+            char keyPressed = GameInputs.K(valids);
+            int k = keyPressed - '0';
+            if (k < 10)
+            {
+                p = ShowInventoryItem(displayItems[k - 1], p);
+                DrawInventory("", p);
+            }
+            switch (keyPressed)
+            {
+                case 'a':
+                    DrawInventory("", p);
+                    break;
+                case 'w':
+                    DrawInventory("weapon", p);
+                    break;
+                case 'f':
+                    DrawInventory("food", p);
+                    break;
+                case 'k':
+                    DrawInventory("keyitems", p); // Redo function with query if user requests
+                    break;
+                case 'q': // Return if user wants to.
+                    return p;                    
+            }
+            return p;
+        }
+        
+        // Simpler function to generate the display string based on the list of items given.
+        private static string InvString(List<InventoryItem> l)
         {
             if (l.Count == 0)
-                l = Inventory;
+                return "Empty       \n";
 
             string s = String.Empty;
             for (int i = 0; i < l.Count; i++) // Loops through list displaying the item, number they have and the max number they can hold
             {
-                s += "{" + (i + 1).ToString() + "} " + l[i].sName + ": " + l[i].noOfItem.ToString() + "of" + l[i].maxNoOfItem.ToString();
+                s += "(" + (i + 1).ToString() + ") " + l[i].sName + ": " + l[i].noOfItem.ToString() + "of" + l[i].maxNoOfItem.ToString();
                 s += "\n";
             }
             return s;
         }
 
-        // Adds one inventory item to the list, checking not full first
+        // Adds one inventory item to the list,
         public void PickUpItem(InventoryItem ItemToAdd) 
         {
-            if (Inventory.Count == iCapacity) // Checking inventory not full
+            
+            foreach(InventoryItem i in Inventory)
             {
-                Console.WriteLine( "Your inventory is full! You must drop something first");
+                if (i.sName == ItemToAdd.sName)
+                {
+                    i.noOfItem += ItemToAdd.noOfItem;
+                    if (i.noOfItem > i.maxNoOfItem)
+                        i.noOfItem = i.maxNoOfItem;
+                }
             }
             Inventory.Add(ItemToAdd);
             return;
         }
 
-        public void ShowInventory() // Shows the player the current items in there inventory
-        {
-            if (Inventory.Count == 0) // Returns by defualt if inventory is empty
-            {
-                Console.WriteLine("Inventory Empty!! Press Enter To Return");
-                Console.ReadLine();
-                return;
-            }
-
-            string s = String.Empty;
-            for (int i = 0; i < Inventory.Count; i++) // Loops through list displaying the item, number they have and the max number they can hold
-            {
-                s += "{" + (i + 1).ToString() + "} " + Inventory[i].sName + ": " + Inventory[i].noOfItem.ToString() + "of" + Inventory[i].maxNoOfItem.ToString();
-                s += "\n";
-            }
-            return;
-
-            Console.WriteLine("Type the number to inspect, or 0 to skip"); // User input to see if user wants to inspect items or just leave
-            int MChoice = (GameInputs.V(Inventory.Count, 0) - 1); // Minus one so matches list idexing
-            if (MChoice == -1)
-                return; // return if the user wants to
-
-            Console.WriteLine(Inventory[MChoice].sName + ": " + Inventory[MChoice].sDescription); // Displays that item and its description
-            Console.WriteLine("[1] Remove One\n[2] Remove All\n[3] Keep");
-            switch (GameInputs.V(3))
-            {
-                case 1:
-                    DeleteItem(Inventory[MChoice], false); // Removes one of the item
-                    break;
-                case 2:
-                    DeleteItem(Inventory[MChoice], true); // Remove all items
-                    break;
-                case 3:
-                    break; // Leave if user wants to
-            }
-                       
-        }
         // Simple function to delete item. does need a quick linear search to find the index to remove at if removing one.
         public void DeleteItem(InventoryItem ItemToRemove, bool All) // Remove item from the inventory
         {
-            if (All)
-                Inventory.Remove(ItemToRemove);
-            for (int i = 0; i < Inventory.Count; i++)
+            if (ItemToRemove.type != "keyitems")
             {
-                if (Inventory[i] == ItemToRemove)
+                if (All)
+                    Inventory.Remove(ItemToRemove);
+                for (int i = 0; i < Inventory.Count; i++)
                 {
-                    Inventory[i].noOfItem--; // quick search to find index to remove at
+                    if (Inventory[i] == ItemToRemove)
+                    {
+                        if (Inventory[i].noOfItem != 1)
+                            Inventory[i].noOfItem--; // quick search to find index to remove at
+                        else
+                            Inventory.Remove(ItemToRemove);
+                    }
                 }
-            }
+            }            
         }
     }
 }
