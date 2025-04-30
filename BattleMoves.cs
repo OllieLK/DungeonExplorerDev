@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Program
 {
-    public enum moveType
+    public enum moveType // Enum for move type
     {
         attack,
         defend
@@ -17,21 +17,25 @@ namespace Program
 
     public abstract class BattleMove
     {
+        // Fields with correct access modifiers
         public moveType type { protected set; get; }
         public int healthChange { protected set; get; }
         public string effect { protected set; get; }
         protected string name { set; get; }
-        public abstract Creature doMove(Creature target);
+        public abstract Creature doMove(Creature target); // Abstract "doMove" - Implemented by attacking move and defensive move differently
         
 
         public BattleMove(string _name, int _healthChange) {
             name = _name;
-            healthChange = _healthChange;
+            healthChange = _healthChange; // Simple constructor assigning
         }
     }
     class AttackingMove : BattleMove
     {
-        private int TurnsLasting;
+        private int TurnsLasting; // Turns lasting for status effect
+
+        // Two constructors, one for just damage and one for moves that give a status effect.
+        // Also sets type enum
         public AttackingMove(string _name, int _healthChange, string _effect, int _turnsLasting) : base(_name, _healthChange)
         {
             TurnsLasting = _turnsLasting;
@@ -42,23 +46,25 @@ namespace Program
         public AttackingMove(string _name, int _healthChange) : base(_name, _healthChange)
         {
             type = moveType.attack;
-            effect = "none";
+            effect = "none"; // set effect to none if no effect
         }
+
         public override Creature doMove(Creature target) {
             Console.Write(name + " Damages " + healthChange + " Health. ");
             if (effect != "none")
-                Console.Write("Also inflicts " + effect + "\n");
-            Console.WriteLine("Press enter to continue");
+                Console.Write("Also inflicts " + effect + "\n"); // Applies effect if present
+            Console.Write("Press enter to continue");
             Console.ReadLine();
 
             target.Health -= healthChange;
-            target.BattleEffect.SetEffect(effect, TurnsLasting);
+            target.BattleEffect.SetEffect(effect, TurnsLasting); // alter target accordingly
             return target;
         }
     }
     class DefensiveMove : BattleMove
     {
         private string effecttoClear;
+        // Similar constructors to above, one for just healing one for moves that remove effect.
         public DefensiveMove(string _name, int _healthChange) : base(_name, _healthChange)
         {
             type = moveType.defend;
@@ -69,15 +75,17 @@ namespace Program
             type = moveType.defend;
             effecttoClear = _effectToClear;
         }
+
         public override Creature doMove(Creature target)
         {
             Console.Write(name + " Recovers " + healthChange + " Health. ");
-            if (effecttoClear != "none")
+            if (effecttoClear != "none") // Recovers from effect if present
                 Console.Write("Also recovered from " + effecttoClear + "\n");
-            Console.WriteLine("Press enter to continue");
+            Console.Write("Press enter to continue");
             Console.ReadLine();
+
             target.BattleEffect.SetEffect(effecttoClear, 1);
-            target.Health += healthChange;
+            target.Health += healthChange; // Alter target accordingly
             return target;
         }
     }

@@ -23,6 +23,7 @@ namespace Program
 
     public abstract class InventoryItem
     {
+        // Item fields, with correct access modifiers
         public int SalePrice { get; protected set; }
         public virtual Player Use(Player p) { return null;  }
         public string type { get; protected set; }
@@ -34,7 +35,7 @@ namespace Program
 
         private static List<InventoryItem> RandomItems;
 
-        public static void initRandomItems()
+        public static void initRandomItems() // Random items (for shops)
         {
             RandomItems = new List<InventoryItem>
             {
@@ -51,7 +52,7 @@ namespace Program
             };
         }
 
-        public static InventoryItem GetRandomItem()
+        public static InventoryItem GetRandomItem() // Function for getting a single item
         {
             Random rnd = new Random();
             return RandomItems[rnd.Next(RandomItems.Count)];
@@ -66,8 +67,10 @@ namespace Program
 
             return items;
         }
-        public InventoryItem() { }
-        public InventoryItem(string name, int maxNoOfItem, int noOfItem, string desc, int price)
+
+        public InventoryItem() { } // Parameterless constructor - incase subclasses make there own
+
+        public InventoryItem(string name, int maxNoOfItem, int noOfItem, string desc, int price) // Simple constructor to assign all values
         {           
             SalePrice = price;
             sDescription = desc;
@@ -82,6 +85,7 @@ namespace Program
         string effectToClear;
         int Recovery;
         
+        // Two constructors used within dungeons - no price items no sold
         public Food(string name, int maxnoOfItem, string desc, int recovery)
         {
             noOfItem = maxnoOfItem;
@@ -90,6 +94,7 @@ namespace Program
             sDescription = desc;
             maxNoOfItem = maxnoOfItem;
             Recovery = recovery;
+            effectToClear = "none";
         }
         public Food(string name, int maxnoOfItem, string desc, int recovery, string effect)
         {
@@ -101,6 +106,8 @@ namespace Program
             Recovery = recovery;
             effectToClear = effect;
         }
+
+        // Constructors used for shop items
         public Food(string name, int maxNoOfItem, int noOfItem, string desc, int price, int recovery, string effect) : base(name, maxNoOfItem, noOfItem, desc, price)
         {
             effectToClear = effect;
@@ -112,13 +119,16 @@ namespace Program
             type = "food";
             Recovery = recovery;
         }
+
+        // Override use function
         public override Player Use(Player p)
         {
             if (effectToClear != "none")
-                if (p.BattleEffect.Name == effectToClear)
+                if (p.BattleEffect.Name == effectToClear) // Remove status effect if current effect removable
                     p.BattleEffect.SetEffect("none", 1);
+
             p.Health = p.Health + Recovery;
-            if (p.Health > p.MaxHealth)
+            if (p.Health > p.MaxHealth) // Recover health
                 p.Health = p.MaxHealth;
             return p;
         }       
@@ -129,14 +139,14 @@ namespace Program
         public int numberofTurns { private set; get; }
         public int damage { private set; get; }
         public string battleEffect { private set; get; }
-        public AttackingItem(string name, int _damage)
+        public AttackingItem(string name, int _damage) // Constructor for damaging items
         {
             type = "battle";
             sName = name;
             damage = _damage;
             battleEffect = "none";
         }
-        public AttackingItem(string name, string _effect, int _damage, int numberOfTurns)
+        public AttackingItem(string name, string _effect, int _damage, int numberOfTurns) // Constructor for items that deal a status effect
         {
             type = "battle";
             sName = name;
@@ -146,7 +156,7 @@ namespace Program
         }
         public Creature UseInBattle(Creature Target)
         {
-            Console.WriteLine("Used " + sName + ".\npress enter");
+            Console.WriteLine("Used " + sName + ".\npress enter"); // Applys damage and status effect then returns result
             Target.BattleEffect.SetEffect(battleEffect, numberofTurns);
             Target.Health -= damage;
             return Target;
@@ -158,13 +168,13 @@ namespace Program
     public class Weapon : InventoryItem
     {
         public int Damage { get; private set; }
-        public Weapon(string name, int damage)
+        public Weapon(string name, int damage) // For enemy weapons which just have name and damage
         {
             Damage = damage;
             sName = name;
             type = "weapon";
         }
-        public Weapon(string name, string desc, int damage)
+        public Weapon(string name, string desc, int damage) // for chest items (no price)
         {
             noOfItem = 1;
             maxNoOfItem = 1;
@@ -173,7 +183,7 @@ namespace Program
             sDescription = desc;
             type = "weapon";
         }
-        public Weapon(string name, int maxNoOfItem, int noOfItem, string desc, int price, int damage) : base(name, maxNoOfItem, noOfItem, desc, price)
+        public Weapon(string name, int maxNoOfItem, int noOfItem, string desc, int price, int damage) : base(name, maxNoOfItem, noOfItem, desc, price) // For weapons sold in the shops
         {
             type = "weapon";
             Damage = damage;
@@ -187,7 +197,7 @@ namespace Program
             noOfItem = ammount;
             type = "coin";
             sName = "Coin stash";
-            sDescription = ammount.ToString();
+            sDescription = ammount.ToString(); // Coin item, uses noOfItem to represent ammount in stash.
         }
     }
 }

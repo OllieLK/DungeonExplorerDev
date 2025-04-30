@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Spectre.Console;
+using System;
 
 namespace Program
 {
@@ -9,12 +10,12 @@ namespace Program
     public class Game
     {
 
-        public void WrapPlayer(Player player)
+        public void WrapPlayer(Player player) // Wrapper function so that P1 can be updated from another assembly (After modified by enemy for instance)
         {
             P1 = player;
         }
         // Player instance
-        public Player P1;
+        public Player P1 { get; private set; }
         // Entry point, sets encoding to support unicode and initializes the player and the map, then starts the titlescreen.
         public Game()
         {
@@ -27,23 +28,13 @@ namespace Program
         // Simple game title screen. will have saving at some point
         public void titleScreen()
         {
-            Console.WriteLine("The Legend Of Zelda: Adventure In Text");
-            Console.WriteLine("[1] New Game");
-            Console.WriteLine("[2] Load");
-            switch (GameInputs.V(2))
-            {
-                case 1:
-                    Console.WriteLine("Starting Game");
-                    gameLoop();
-                    break;  
-                case 2: // Will eventually Implement saving, not done yet.
-                    Console.WriteLine("Not Implemented");
-                    break;
-            }
-           Console.ReadLine();
+            Console.Clear();
+            AnsiConsole.Render(new Panel("THE LEGEND OF ZELDA\nPress enter to start\n\n\nBy Oliver Lazarus-Keene 29218390\nMusic not made by myself"));
+            Console.ReadLine();
+            gameLoop();           
         }
         
-        void gameLoop()
+        private void gameLoop()
         {
             do { 
                            
@@ -55,7 +46,10 @@ namespace Program
 
         public void EndCredits()
         {
-
+            Console.Clear();
+            Console.WriteLine("Thanks for playing my dungeon explorer game!\nMusic used was not made by myself.\nPress enter to return to title screen.");
+            Console.ReadLine();
+            titleScreen();
         }
     }
 }

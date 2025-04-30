@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Program
 {
-    public abstract class Floor
+    public abstract class Floor // Abstract class for floors (within dungeons)
     {
         protected Dungeon dungeon;
         public Floor(Dungeon d)
@@ -19,7 +19,7 @@ namespace Program
         }
 
         public abstract bool DoFLoor(Player p, int floorNum);
-        protected virtual void drawFloor(string drawitem, string roomcontrols, int floornum, Player p)
+        protected virtual void drawFloor(string drawitem, string roomcontrols, int floornum, Player p) // virtual class for making nice looking graphics for the floor
         {
             Console.Clear();
             p.DrawOverWorld(false);
@@ -35,7 +35,7 @@ namespace Program
     public class BattleFloor : Floor
     {
         private Battle b { get; }
-        public BattleFloor(Dungeon d, Battle _battle) : base(d)
+        public BattleFloor(Dungeon d, Battle _battle) : base(d) // Battle floor adds battle as a parameter
         {
             b = _battle;
         }
@@ -44,7 +44,7 @@ namespace Program
             Console.SetCursorPosition(0, 23);
             AnsiConsole.Render(new Panel("Battle up ahead. Press enter to start."));
             Console.ReadLine();
-            b.startBattle(p);
+            b.startBattle(p); // Starts battle 
             return true;
         }
     }
@@ -63,7 +63,8 @@ namespace Program
                     return false;
                 case 'e':
                     p.pInv.DrawInventory("", p);
-                    DoFLoor(p, f);
+                    DungeonExplorer.GameInstance.WrapPlayer(p); // Wrap back to instance incase player used items.
+                    DoFLoor(p, f); // Do inventory then return back to this floor
                     break;
                 case 'q':
                     return true;
@@ -74,7 +75,7 @@ namespace Program
     }
     public class ChestFloor : Floor
     {
-        private InventoryItem chestItem { get; }
+        private InventoryItem chestItem;
         public ChestFloor(InventoryItem _chestItem, Dungeon d) : base(d)
         {
             chestItem = _chestItem;
@@ -86,9 +87,9 @@ namespace Program
             drawFloor(panelstr, "(y) Pickup\n(n) leave behind", f, p);
             if (GameInputs.K() == 'y')
             {
-                p.pInv.PickUpItem(chestItem);
+                p.pInv.PickUpItem(chestItem); // add to players inventory
             }
-            Program.DungeonExplorer.GameInstance.WrapPlayer(p);
+            Program.DungeonExplorer.GameInstance.WrapPlayer(p); // wrap main instance
             return false;
         }
     }

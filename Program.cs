@@ -8,20 +8,19 @@ namespace Program
 {
     public class DungeonExplorer
     {
-        private static SoundPlayer p;
-        public static Game GameInstance;
+        private static SoundPlayer p; // Just for a bit of fun - background music.
+        public static Game GameInstance; // Instance
 
-        public static void Main(string[] Args)
+        public static void Main()
         {
             GameTests g = new GameTests();
-            g.RunTests();
+            g.RunTests(); // Run test class
 
 
-            p = new SoundPlayer("Final Fantasy VII - Prelude (Original Soundtrack).wav");
-            //p.PlayLooping();
-            Console.CursorVisible = false;
+
+            Console.CursorVisible = false; // Set curser to be invisible
             GameInstance = new Game();
-            GameInstance.titleScreen();           
+            GameInstance.titleScreen();           // Start game
         }
     }
 }

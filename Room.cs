@@ -2,6 +2,7 @@
 using Spectre.Console;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
@@ -31,14 +32,14 @@ namespace Program
     public class Map
     {
 
-        public void openHyruleCastle()
+        public void openHyruleCastle() // Open hyrule castle (Make interactable)
         {
             foreach (Room R in Arr)
                 if (R.GetType() == typeof(HyruleCastle))
                     R.interactable = true;
         }
 
-        public const int Easies = 3;
+        public const int Easies = 3; // Number of each type of dungeon difficulty
         public const int Mediums = 4;
         public const int Hards = 3;
 
@@ -49,12 +50,20 @@ namespace Program
         // Initializes each room in the map array with a default character and description
         // Also sets some items in one of the rooms, and gives the 4 bordering rooms a description so that the player can move to them
         // and see the description
-        public void UpdateShops() {
+
+
+        private void UpdateShops() {
             foreach(Room r in Arr)
                 if (r.GetType() == typeof(Shop))
                     (r as Shop).UpdateItems();
         }
-
+        private void UpdateFields()
+        {
+            foreach (Room r in Arr)
+                if (r.GetType() == typeof(Field))
+                    (r as Field).Update();
+        }
+        // Map constructor makes all the rooms and assigns the floors to dungeons
         public Map(int startingposX, int startingposY)
         {
             Random rnd = new Random();
@@ -72,7 +81,7 @@ namespace Program
             Arr[7, 12] = new Shop("Nabooru's Nook", InventoryItem.GetRandomItem(rnd.Next(3)));
             Arr[8, 18] = new Shop("Rauru's Retail", InventoryItem.GetRandomItem(rnd.Next(3)));
             // Dungeons
-            // Forest Temple (EASY) - 4 rooms
+            // Forest Temple (EASY) 
             Arr[0, 15] = new Dungeon("Forest Temple", null, DungeonDif.EASY);
             (Arr[0, 15] as Dungeon).setFloor(new List<Floor>
             {
@@ -82,7 +91,7 @@ namespace Program
                 new ChestFloor(new Weapon("Bee Stinger", "A bee stinger mounted on a stick. Sharp, but basic", 20), Arr[0, 15] as Dungeon),
             });
 
-            // Fire Temple (EASY) - 4 rooms
+            // Fire Temple (EASY) 
             Arr[2, 5] = new Dungeon("Fire Temple", null, DungeonDif.EASY);
             (Arr[2, 5] as Dungeon).setFloor(new List<Floor>
             {
@@ -92,7 +101,7 @@ namespace Program
                 new ChestFloor(new Weapon("Fire Sword", "A sword imbued with the power of fire", 25), Arr[2, 5] as Dungeon),
             });
 
-            // Water Temple (EASY) - 4 rooms
+            // Water Temple (EASY)
             Arr[3, 10] = new Dungeon("Water Temple", null, DungeonDif.EASY);
             (Arr[3, 10] as Dungeon).setFloor(new List<Floor>
             {
@@ -102,7 +111,7 @@ namespace Program
                 new ChestFloor(new Weapon("Water Staff", "A staff that controls water currents", 18), Arr[3, 10] as Dungeon),
             });
 
-            // Shadow Temple (MEDIUM) - 5 rooms
+            // Shadow Temple (MEDIUM) 
             Arr[5, 4] = new Dungeon("Shadow Temple", null, DungeonDif.MEDIUM);
             (Arr[5, 4] as Dungeon).setFloor(new List<Floor>
             {
@@ -113,7 +122,7 @@ namespace Program
                 new ChestFloor(new Food("Dark Elixir", 1, "An elixir that increases dark magic power", 50), Arr[5, 4] as Dungeon),
             });
 
-            // Spirit Temple (MEDIUM) - 5 rooms
+            // Spirit Temple (MEDIUM) 
             Arr[5, 15] = new Dungeon("Spirit Temple", null, DungeonDif.MEDIUM);
             (Arr[5, 15] as Dungeon).setFloor(new List<Floor>
             {
@@ -124,7 +133,7 @@ namespace Program
                 new ChestFloor(new Weapon("Spirit Staff", "A magical staff that channels ethereal power", 25), Arr[5, 15] as Dungeon),
             });
 
-            // Ice Cavern (MEDIUM) - 5 rooms
+            // Ice Cavern (MEDIUM) 
             Arr[6, 2] = new Dungeon("Ice Cavern", null, DungeonDif.MEDIUM);
             (Arr[6, 2] as Dungeon).setFloor(new List<Floor>
             {
@@ -135,7 +144,7 @@ namespace Program
                 new ChestFloor(new Food("Iced Nectar", 2, "A chilling nectar that restores health", 30), Arr[6, 2] as Dungeon),
             });
 
-            // Stone Tower (MEDIUM) - 5 rooms
+            // Stone Tower (MEDIUM) 
             Arr[6, 10] = new Dungeon("Stone Tower", null, DungeonDif.MEDIUM);
             (Arr[6, 10] as Dungeon).setFloor(new List<Floor>
             {
@@ -146,7 +155,7 @@ namespace Program
                 new ChestFloor(new Weapon("Stone Shield", "A shield made from solid stone", 12), Arr[6, 10] as Dungeon),
             });
 
-            // Skyward Sword Temple (HARD) - 6 rooms (added more battle floors)
+            // Skyward Sword Temple (HARD)
             Arr[7, 5] = new Dungeon("Skyward Sword Temple", null, DungeonDif.HARD);
             (Arr[7, 5] as Dungeon).setFloor(new List<Floor>
             {
@@ -160,7 +169,7 @@ namespace Program
                 new BattleFloor(Arr[7, 5] as Dungeon, new Battle(Enemy.getEnemies(5, DungeonDif.HARD))),  // Additional BattleFloor
             });
 
-            // Dark Link's Lair (HARD) - 6 rooms (added more battle floors)
+            // Dark Link's Lair
             Arr[8, 8] = new Dungeon("Dark Link's Lair", null, DungeonDif.HARD);
             (Arr[8, 8] as Dungeon).setFloor(new List<Floor>
             {
@@ -174,7 +183,7 @@ namespace Program
                 new BattleFloor(Arr[8, 8] as Dungeon, new Battle(Enemy.getEnemies(5, DungeonDif.HARD))),  // Additional BattleFloor
             });
 
-            // Temple of Time (HARD) - 6 rooms (added more battle floors)
+            // Temple of Time
             Arr[9, 14] = new Dungeon("Temple of Time", null, DungeonDif.HARD);
             (Arr[9, 14] as Dungeon).setFloor(new List<Floor>
             {
@@ -230,7 +239,8 @@ namespace Program
         // Updates the map after a player moves between rooms
         public void UpdateMap(int posX, int posY, int NposX, int NposY)
         {
-            
+            UpdateFields();
+            UpdateShops();
             Arr[posX, posY].setC(Arr[posX, posY].getFilledIn());    // Reset old room position            
             Arr[NposX, NposY].setC("[blue]U[/]");          // Put U in new space
         }
@@ -253,7 +263,7 @@ namespace Program
 
     public abstract class Room
     {
-
+        // Fields with correct access modifiers
         public bool interactable { get; set; }
 
         public List<InventoryItem> FloorItems = new List<InventoryItem>(); // List for floor items.
@@ -286,6 +296,12 @@ namespace Program
             C = "?";
             FilledIn = " ";
         }
+        public void Update()
+        {
+            Random rnd = new Random();
+            if (rnd.Next(5) == 3)
+                FloorItems.Add(new Coin(rnd.Next(10, 60))); // Adds more random coins around map
+        }
     }
 
     public class Shop : Room
@@ -293,16 +309,16 @@ namespace Program
         public void UpdateItems()
         {
             Random rnd = new Random();
-            itemsForSale = InventoryItem.GetRandomItem(rnd.Next(5));
+            itemsForSale = InventoryItem.GetRandomItem(rnd.Next(5)); // Change the items for sale
         }
         public Shop(string description, List<InventoryItem> _saleItems) : base(description) { 
             interactable = true;
             itemsForSale = _saleItems;
             C = "?";
-            FilledIn = "[blue]S[/]";
+            FilledIn = "[blue]S[/]"; // Assign starting values
         }
         private List<InventoryItem> itemsForSale;
-        public override object Interact(Player p)
+        public override object Interact(Player p) // Shop interaction logic
         {
 
             Console.SetCursorPosition(0, 17);
@@ -359,7 +375,7 @@ namespace Program
         {
             Console.Clear();
             p.DrawOverWorld(false);
-            Panel txt = new Panel(dialogue + "\nPress enter to continue");
+            Panel txt = new Panel(dialogue + "\nPress enter to continue"); // Run NPC dialogue - Simple writing out the dialogue
             txt.Header = new PanelHeader(description);
             AnsiConsole.Render(txt);
             Console.Read();
@@ -387,7 +403,7 @@ namespace Program
             AnsiConsole.Render(txt);
             Console.ReadLine();
             System.Threading.Thread.Sleep(1000);
-            DungeonExplorer.GameInstance.EndCredits();
+            DungeonExplorer.GameInstance.EndCredits(); // Call end function
             return null;
         }
 
